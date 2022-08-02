@@ -1,0 +1,27 @@
+{
+  "name": "yukibot",
+  "version": "1.0.0",
+  "description": "Bot For YuukiPS",
+  "main": "./src/",
+  "scripts": {
+    "start": "node .",
+    "reg": "node deploy-commands.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akbaryahya/YukiBot.git"
+  },
+  "keywords": [
+    "bot"
+  ],
+  "author": "Akbar Yahya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akbaryahya/YukiBot/issues"
+  },
+  "homepage": "https://github.com/akbaryahya/YukiBot#readme",
+  "dependencies": {
+    "@discordjs/rest": "^1.0.1",
+    "discord.js": "^14.1.2"
+  }
+}
