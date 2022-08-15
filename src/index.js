@@ -71,6 +71,8 @@ bot.on("interactionCreate", async (interaction) => {
 });
 
 // https://discordjs.guide/creating-your-bot/creating-commands.html#server-info-command
+// https://stackoverflow.com/questions/64006888/discord-js-bot-disallowed-intents-privileged-intent-provided-is-not-enabled-o
+// https://stackoverflow.com/a/69110976/3095372
 bot.on("messageCreate", (message) => {
   // ignore messages from bots
   if (message.author.bot) return;
