@@ -5,7 +5,7 @@
   "main": "./src/",
   "scripts": {
     "start": "node .",
-    "reg": "node deploy-commands.js"
+    "reg": "node ./src/deploy-commands.js"
   },
   "repository": {
     "type": "git",
