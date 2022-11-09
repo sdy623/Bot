@@ -8,7 +8,10 @@ const {
   Events,
 } = require("discord.js");
 const { token, id_admin } = require("./config.json");
-const { config } = require("node:process");
+
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});
 
 // debug, remove some later
 const bot = new Client({
@@ -39,6 +42,10 @@ const bot = new Client({
     Partials.GuildScheduledEvent,
     Partials.ThreadMember,
   ],
+});
+
+bot.on(Events.ShardError, error => {
+	console.error('A websocket connection encountered an error:', error);
 });
 
 // Commands
@@ -103,6 +110,7 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 // https://stackoverflow.com/a/69110976/3095372
 
 bot.on("messageCreate", (message) => {
+
   console.log(
     `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
   );
@@ -110,17 +118,18 @@ bot.on("messageCreate", (message) => {
   // ignore messages from bots
   if (message.author.bot) return;
 
-  // hehe melon
-  if (message.content.toLowerCase() === "melon") {
-    return message.react("🍈");
-  }
-
-  // (verify) Delete useless messages, If not admin
+  // (verify) Delete useless messages, If not admin (TODO: Add multi user)
   if (message.channel.id == 1039554337438961714) {
     if (message.author.id != id_admin) {
       message.delete();
     }
   }
+
+  // Add Melon
+  if (message.content.toLowerCase() === "melon") {
+    message.react("🍈");
+  }
+
 });
 
 bot.login(token);
