@@ -7,7 +7,7 @@ if [ "$metode" = "build" ];then
 fi
 
 if [ "$metode" = "localhost" ];then
- npm run
+ npm run start
 fi
 
 if [ "$metode" = "testing" ];then
