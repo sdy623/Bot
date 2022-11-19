@@ -32,6 +32,11 @@ module.exports = {
     modal.addComponents(firstActionRow);
 
     // Show modal to user
-    await interaction.showModal(modal);
+    try {
+      await interaction.showModal(modal);
+    } catch (ex) {
+      console.log(ex);
+    }
+    
   },
 };

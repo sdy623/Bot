@@ -2,15 +2,15 @@
 
 metode=$1
 
-if [ "$metode" = "build" ];then
- docker build -t "siakbary/yuukibot:latest" .;
+if [ "$metode" = "b" ];then
+ docker build -t "siakbary/yuukibot:latest" --progress=plain .;
 fi
 
-if [ "$metode" = "localhost" ];then
+if [ "$metode" = "local" ];then
  npm run start
 fi
 
-if [ "$metode" = "testing" ];then
+if [ "$metode" = "t" ];then
  docker run --rm -it -v //e/DOC/Akbar/Work/site/Yuuki-Bot/src/config.json:/app/src/config.json siakbary/yuukibot:latest
 fi
 

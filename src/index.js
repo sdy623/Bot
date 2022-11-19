@@ -9,8 +9,9 @@ const {
 } = require("discord.js");
 const { token, id_admin } = require("./config.json");
 
-process.on('unhandledRejection', error => {
-	console.error('Unhandled promise rejection:', error);
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled promise rejection:", error);
+  process.exit(1);
 });
 
 // debug, remove some later
@@ -44,9 +45,12 @@ const bot = new Client({
   ],
 });
 
-bot.on(Events.ShardError, error => {
-	console.error('A websocket connection encountered an error:', error);
+/*
+bot.on(Events.Error, error => {
+	console.error('Error Bot', error);
+  //process.exit(1);
 });
+*/
 
 // Commands
 bot.commands = new Collection();
@@ -96,12 +100,15 @@ bot.on(Events.InteractionCreate, async (interaction) => {
   if (!c) return;
   try {
     await c.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({
-      content: "Command is not recognized :(",
-      ephemeral: true,
-    });
+  } catch (error_real) {
+    try {
+      await interaction.reply({
+        content: "Command is not recognized :(",
+        ephemeral: true,
+      });
+    } catch (error_skip) {
+      console.error(error_real);
+    }
   }
 });
 
@@ -110,7 +117,6 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 // https://stackoverflow.com/a/69110976/3095372
 
 bot.on("messageCreate", (message) => {
-
   console.log(
     `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
   );
@@ -129,7 +135,6 @@ bot.on("messageCreate", (message) => {
   if (message.content.toLowerCase() === "melon") {
     message.react("🍈");
   }
-
 });
 
 bot.login(token);
