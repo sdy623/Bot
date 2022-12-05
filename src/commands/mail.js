@@ -1,4 +1,4 @@
-const { SlashCommandBuilder,CommandInteraction } = require("discord.js");
+const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const axios = require('axios');
 const apis = require('../gm/api');
 const config = require("../config.json");
@@ -49,7 +49,7 @@ module.exports = {
                 .setRequired(true))
         .addStringOption(option =>
             option.setName('command')
-                .setDescription('giveall|gitem-201-1000')
+                .setDescription('msg-title-yourmessage|gitem-itemid-amount,itemid-amount')
                 .setRequired(true)),
     /**
      * @param {CommandInteraction} interaction
@@ -61,26 +61,33 @@ module.exports = {
             var item = null
             let uid = interaction.options.getString('uid');
             let set_command = interaction.options.getString('command');
-      
-            if(set_command == "giveall"){
 
-            }else if(set_command.includes("gitem")){
+            var input;
+            if (set_command.includes("msg")) {
+                // send email
                 var valb = set_command.split("-");
-                // TODO: add more check vaild
-                item = [
-                    {
-                        'item_id': valb[1],  // item id
-                        'amount': valb[2],   // quantity
+                input = YSGM_mail(uid, valb[1], interaction.user.username, unix, valb[2]);
+            } else if (set_command.includes("gitem")) {
+                // send multi item
+                var more_item = set_command.split(",");
+                var itemtoadd = [];
+                more_item.forEach(function (data_msg) {
+                    console.log(data_msg);
+                    let ks = data_msg.replace("gitem-", "");
+                    var valb2 = ks.split("-");
+                    itemtoadd.push({
+                        'item_id': valb2[0],  // item id
+                        'amount': valb2[1],   // quantity
                         'level': 0,         // level
                         'promote_level': 0,  // cts
-                    },
-                ];
-            }else{
+                    });
+                });
+                input = YSGM_mail(uid, "A gift item from Discord", interaction.user.username, unix, `Accept a gift from me ~ YuukiPS`, itemtoadd);
+            } else {
                 return await interaction.reply({ content: `Unknown command: ${set_command}`, ephemeral: true });
             }
 
-            var input = YSGM_mail(uid,"Command Discord","YuukiPS",unix,`This is command from ${interaction.user.username} > ${set_command}`,item);
-            console.log("Data: " + apis.YSGM_sign(input));
+            //console.log("Data: " + apis.YSGM_sign(input));
             // 1005 - email
             let params = apis.YSGM_cmd(1005, null, null, input);
             const response = await axios.get(config.api_server_gio, { params: params });
