@@ -1,3 +1,3 @@
 # YukiBot
 
-npm run
+./run.sh s

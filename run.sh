@@ -6,8 +6,12 @@ if [ "$metode" = "b" ];then
  docker build -t "siakbary/yuukibot:latest" --progress=plain .;
 fi
 
-if [ "$metode" = "local" ];then
+if [ "$metode" = "s" ];then
  npm run start
+fi
+
+if [ "$metode" = "reg" ];then
+ npm run reg
 fi
 
 if [ "$metode" = "t" ];then
