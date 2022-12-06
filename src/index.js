@@ -1,7 +1,7 @@
 const express = require('express');
 const web = express();
 
-const apis = require('./gm/api');
+const api_gio = require('./gm/gio');
 const axios = require('axios');
 const config = require("./config.json");
 
@@ -158,7 +158,7 @@ web.all('/server/:id', async (req, res) => {
     s = req.params.id;
   };
   try {
-    let d = await apis.YSGM_server();
+    let d = await api_gio.Server();
     return res.json(d);
   } catch (error) {
     console.log(error);
@@ -186,7 +186,7 @@ web.all('/server/:id/command', async (req, res) => {
     });
   }
   try {
-    let d = await apis.YSGM_gm(uid, cmd);
+    let d = await api_gio.GM(uid, cmd);
     return res.json(d);
   } catch (error) {
     console.log(error);

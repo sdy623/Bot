@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const apis = require('../gm/api');
+const api_gio = require('../gm/gio');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,15 +12,15 @@ module.exports = {
     async execute(interaction) {        
         try {
             // 1101 = check online?
-            let d = await apis.YSGM_server();
+            let d = await api_gio.GIO_server();
             if (d.code == 200) {
-                await interaction.reply(`Total Player currently ${d.online} online on GIO server with ${Object.keys(d.server).length} sub server`);
+                await interaction.reply(`Total Player currently ${d.data.online} online on GIO server with ${Object.keys(d.data.server).length} sub server`);
             } else {
                 await interaction.reply(`Error msg: ${d.msg}, retcode: ${d.code}`);
             }
         } catch (err) {
             console.log("Error: ",err);
-            await interaction.reply("Error catch2");
+            await interaction.reply("Unknown problem");
         }
     },
 };
