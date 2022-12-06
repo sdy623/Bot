@@ -1,9 +1,11 @@
 const express = require('express');
+const cors = require('cors');
+
 const web = express();
 
+web.use(cors())
+
 const api_gio = require('./gm/gio');
-const axios = require('axios');
-const config = require("./config.json");
 
 const fs = require("node:fs");
 const path = require("node:path");

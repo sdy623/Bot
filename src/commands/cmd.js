@@ -35,6 +35,7 @@ module.exports = {
             interaction.reply({ content: "Please wait...", ephemeral: true });
             await lib.sleep(3);
 
+            /*
             if (!set_code) {
                 // find id user in key
                 var found_user = key.find((j) => j.id === itme);
@@ -75,6 +76,7 @@ module.exports = {
 
                 }
             }
+            */
 
             let d = await api_gio.GM(uid, set_command);
             return await interaction.editReply({ content: d.msg, ephemeral: true });
