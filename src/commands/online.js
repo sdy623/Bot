@@ -1,26 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const crypto = require("crypto");
-const axios = require('axios');
 const apis = require('../gm/api');
-const config = require("../config.json");
-
-async function checkOnline() {
-    try {
-        // 1101 = check online?
-        let params = apis.YSGM_cmd(1101);
-        const response = await axios.get(config.api_server_gio, {params: params});
-        const result = response.data;
-        console.log(result);
-        if (result.msg == 'succ' && result.retcode == 0) {
-            return `Total Player currently ${result.data.online_player_num_except_sub_account} online on GIO server with ${Object.keys(result.data.gameserver_player_num).length} sub server`;
-        } else {
-            return `Error msg: ${result.msg}, retcode: ${result.retcode}`;
-        }
-    } catch (err) {
-        console.log("Error: ",err);
-        return "Error catch2";
-    }
-}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,7 +10,17 @@ module.exports = {
      * @returns {void}
      */
     async execute(interaction) {        
-        var r = await checkOnline();
-        await interaction.reply(r);
+        try {
+            // 1101 = check online?
+            let d = await apis.YSGM_server();
+            if (d.code == 200) {
+                await interaction.reply(`Total Player currently ${d.online} online on GIO server with ${Object.keys(d.server).length} sub server`);
+            } else {
+                await interaction.reply(`Error msg: ${d.msg}, retcode: ${d.code}`);
+            }
+        } catch (err) {
+            console.log("Error: ",err);
+            await interaction.reply("Error catch2");
+        }
     },
 };

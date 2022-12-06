@@ -1,3 +1,10 @@
+const express = require('express');
+const web = express();
+
+const apis = require('./gm/api');
+const axios = require('axios');
+const config = require("./config.json");
+
 const fs = require("node:fs");
 const path = require("node:path");
 const {
@@ -47,7 +54,7 @@ const bot = new Client({
 
 /*
 bot.on(Events.Error, error => {
-	console.error('Error Bot', error);
+  console.error('Error Bot', error);
   //process.exit(1);
 });
 */
@@ -138,3 +145,55 @@ bot.on("messageCreate", (message) => {
 });
 
 bot.login(token);
+
+const port = 3000;
+
+web.all('/', (req, res) => {
+  res.send('API YuukiBot');
+});
+
+web.all('/server/:id', async (req, res) => {
+  var s = "gio";
+  if (req.params.id) {
+    s = req.params.id;
+  };
+  try {
+    let d = await apis.YSGM_server();
+    return res.json(d);
+  } catch (error) {
+    console.log(error);
+    return res.json({ error: 302 });
+  }
+})
+
+web.all('/server/:id/command', async (req, res) => {
+  var s = "gio";
+  if (req.params.id) {
+    s = req.params.id;
+  };
+  let uid = req.query.uid;
+  let cmd = req.query.cmd;
+  if (!uid) {
+    return res.json({
+      msg: "no uid",
+      code: 301
+    });
+  }
+  if (!cmd) {
+    return res.json({
+      msg: "no cmd",
+      code: 301
+    });
+  }
+  try {
+    let d = await apis.YSGM_gm(uid, cmd);
+    return res.json(d);
+  } catch (error) {
+    console.log(error);
+    return res.json({ error: 302 });
+  }
+})
+
+web.listen(port, () => {
+  console.log(`App listening on port ${port}`);
+});
