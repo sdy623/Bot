@@ -27,7 +27,7 @@ module.exports = {
             if (set_command.includes("msg")) {
                 // send email
                 var valb = set_command.split("-");
-                input = api_gio.Mail(uid, valb[1], interaction.user.username, null, valb[2]);
+                input = await api_gio.Mail(uid, valb[1], interaction.user.username, null, valb[2]);
             } else if (set_command.includes("gitem")) {
                 // send multi item
                 var more_item = set_command.split(",");
@@ -43,7 +43,7 @@ module.exports = {
                         'promote_level': 0,  // cts
                     });
                 });
-                input = api_gio.Mail(uid, "A gift item from Discord", interaction.user.username, null, `Accept a gift from me ~ YuukiPS`, itemtoadd);
+                input = await api_gio.Mail(uid, "A gift item from Discord", interaction.user.username, null, `Accept a gift from me ~ YuukiPS`, itemtoadd);
             } else {
                 return await interaction.reply({ content: `Unknown command: ${set_command}`, ephemeral: true });
             };
