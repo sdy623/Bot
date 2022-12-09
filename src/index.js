@@ -148,8 +148,6 @@ bot.on("messageCreate", (message) => {
 
 bot.login(token);
 
-const port = 3000;
-
 web.all('/', (req, res) => {
   res.send('API YuukiBot');
 });
@@ -196,6 +194,6 @@ web.all('/server/:id/command', async (req, res) => {
   }
 })
 
-web.listen(port, () => {
-  console.log(`App listening on port ${port}`);
+var listener = web.listen(3000, function () {
+  console.log('Server started on port %d', listener.address().port);
 });

@@ -86,8 +86,8 @@ module.exports = {
                 // if have data
                 if (result.data) {
                     return {
-                        msg: result.data.msg,
-                        code: result.data.retcode
+                        msg: result.data.retmsg,
+                        code: result.retcode
                     };
                 } else {
                     return {

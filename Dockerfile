@@ -1,11 +1,10 @@
 FROM node:current-alpine3.15
-ENV NODE_ENV=production
 
 WORKDIR /app
 
 COPY ["package.json", "."]
 
-RUN npm install --production
+RUN npm install
 
 COPY src ./src
 
