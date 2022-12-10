@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const eta = require("eta");
 
 const api_gio = require('./gm/gio');
+const mylib = require("./lib");
 const config = require("./config.json");
 
 const fs = require("node:fs");
@@ -149,7 +151,7 @@ bot.on("messageCreate", (message) => {
 
 
   // 969145030537281536 = log public (join/out) | 987073348418809928 = log private
-  if (message.channel.id != "969145030537281536" || message.channel.id != "987073348418809928") {
+  if (!mylib.contains(message.channel.id, ['969145030537281536','987073348418809928'])) {
     console.log(
       `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
     );
@@ -183,27 +185,56 @@ if (config.startup.bot) {
 }
 
 const web = express();
+
+// Core
 web.use(cors());
 
+// Static & Web
+web.use(express.static('web/public'));
+web.engine("eta", eta.renderFile);
+web.set("view engine", "eta");
+web.set("views", __dirname + "/web/views");
+
 web.all('/', (req, res) => {
-  res.send('API YuukiBot');
+  res.render("home", {
+    title: "Welcome to YuukiPS",
+    description: "Im lazy to write"
+  })
 });
 
-web.all('/server/:id', async (req, res) => {
+web.all('/api', (req, res) => {
+  res.send('API YuukiPS');
+});
+
+web.all('/api/server/:id', async (req, res) => {
   var s = "gio";
+
   if (req.params.id) {
     s = req.params.id;
+    var g_config = config.server[s];
+    if(g_config){
+      console.log(g_config);      
+    }else{
+      return res.json({ 
+        msg: "Config server not found",
+        code: 404 
+      });
+    }
   };
+
   try {
     let d = await api_gio.Server();
     return res.json(d);
   } catch (error) {
     console.log(error);
-    return res.json({ error: 302 });
+    return res.json({ 
+      msg: "Error",
+      code: 302 
+    });
   }
 })
 
-web.all('/server/:id/command', async (req, res) => {
+web.all('/api/server/:id/command', async (req, res) => {
   var s = "gio";
   if (req.params.id) {
     s = req.params.id;
