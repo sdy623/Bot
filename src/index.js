@@ -5,6 +5,7 @@ const eta = require("eta");
 const api_gio = require('./gm/gio');
 const mylib = require("./lib");
 const config = require("./config.json");
+var eta_plugin_random = require("./web/plugin/random")
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -189,11 +190,16 @@ const web = express();
 // Core
 web.use(cors());
 
-// Static & Web
-web.use(express.static('web/public'));
+// Static
+web.use(express.static(__dirname + '/web/public'));
+// Web
+eta.configure({
+  plugins: [eta_plugin_random],
+  cache: false
+});
 web.engine("eta", eta.renderFile);
 web.set("view engine", "eta");
-web.set("views", __dirname + "/web/views");
+web.set("views", __dirname + '/web/views');
 
 web.all('/', (req, res) => {
   res.render("home", {
@@ -206,6 +212,17 @@ web.all('/api', (req, res) => {
   res.send('API YuukiPS');
 });
 
+web.all('/api/server', (req, res) => {
+  var obj = config.server;
+  const r = Object.keys(obj).map(key => {
+    var tmp = {};
+    tmp['name']=obj[key].title;
+    tmp['id']=key;
+    return tmp;
+  });
+  res.json(r);
+});
+
 web.all('/api/server/:id', async (req, res) => {
   var s = "gio";
 
@@ -213,7 +230,7 @@ web.all('/api/server/:id', async (req, res) => {
     s = req.params.id;
     var g_config = config.server[s];
     if(g_config){
-      console.log(g_config);      
+      //console.log(g_config);      
     }else{
       return res.json({ 
         msg: "Config server not found",
@@ -222,6 +239,7 @@ web.all('/api/server/:id', async (req, res) => {
     }
   };
 
+  // get server stats/info
   try {
     let d = await api_gio.Server();
     return res.json(d);

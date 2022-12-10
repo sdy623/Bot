@@ -1,0 +1,21 @@
+<footer class="pt-3 mt-4 text-muted border-top text-center">
+  <div>
+    <p>
+      <a class="float-left mr-2" href="https://discord.gg/tRYMG7Nm2D" target="_blank" rel="sponsored">
+        <img src="https://discordapp.com/api/guilds/964119462188040202/widget.png?style=shield" alt="DockerGS"></img>
+      </a>
+
+      <img class="float-left mr-2" src="//s4is.histats.com/stats/i/4713922.gif?4713922&103"></img>
+
+      <a href="https://stats.uptimerobot.com/L8Nx6FL4V" target="_blank" rel="sponsored">
+        <img class="float-left" alt="Uptime Robot ratio (30 days)" src="https://img.shields.io/uptimerobot/ratio/m792813707-8d10db668102aad9bdb04f78?label=Server"></img>
+      </a>
+
+    </p>
+    <p>
+      <a href="https://yuuki.me/" target="_blank" rel="sponsored">
+        Made with <span class="heart">❤</span> in Indonesia,Makassar
+      </a>
+    </p>
+  </div>
+</footer>

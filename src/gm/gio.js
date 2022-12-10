@@ -116,7 +116,8 @@ module.exports = {
                     server: result.data.gameserver_player_num,
                     online: result.data.online_player_num_except_sub_account
                 },
-                code: 200
+                code: 200,
+                msg: "OK"
             };
         } catch (error) {
             console.log(error);
