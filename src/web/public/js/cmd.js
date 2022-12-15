@@ -1,5 +1,10 @@
+API_JSON_DATA = "https://fastly.jsdelivr.net/gh/Dituon/grasscutter-command-helper@main/data/en-US/3.3/"
+// found https://github.com/Dituon/grasscutter-command-helper/tree/main/data/en-US/3.3
+
 async function setup() {
     try {
+
+        // list server
         const r = await axios.get('/api/server');
         if (r.data) {
             var data = r.data;
@@ -14,6 +19,21 @@ async function setup() {
             });
 
         }
+
+        // list monster
+        const r_monster = await axios.get(API_JSON_DATA + 'monsterList.json');
+        var data_monster = r_monster.data;
+        if (data_monster) {
+            //console.log(data_monster);
+            let list_ms = document.querySelector('#list_monster');
+            data_monster.forEach(item => {
+                let option = document.createElement('option');
+                option.value = item.id;
+                option.text = item.name;
+                list_ms.appendChild(option);
+            });
+        }
+
     } catch (error) {
         console.error(error);
     }
@@ -24,7 +44,7 @@ let cmd_raw = document.querySelector("#cmd_raw");
 cmd_raw.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    if(!data_login){
+    if (!data_login) {
         Swal.fire({
             icon: 'error',
             title: "No Login",
@@ -44,39 +64,55 @@ cmd_raw.addEventListener("submit", async function (e) {
     //let json = JSON.stringify(object);
     //console.log(object);
 
-    var tmp = data_login;
+    var raw_cmd = object['get_cmd_raw'];
 
-    tmp['cmd'] = object['get_cmd_raw'];
+    const cmd_line = raw_cmd.split(/\r?\n/);
+    const total_cmd = cmd_line.length;
 
-    console.log(tmp);
+    // list cmd
+    for (let i = 0; i < total_cmd; i++) {
+        const cmdp = cmd_line[i].replace("/", "").replace("!", "");
+        if (!cmdp) {
+            continue;
+        }
 
-    //TODO: check  type?
-    const rr = await axios.get('/api/server/' + data_login['server']+"/command", {
-        params: tmp
-    });
-    console.log(rr);
-    if (rr.data) {
-        var d = rr.data;
-        if (d.code == 200) {
-            Swal.fire({
-                icon: 'success',
-                title: d.msg,
-                showConfirmButton: false,
-                timer: 1500
-            });
+        var tmp = {
+            uid: data_login.user.uid,
+            code: data_login.user.code, // TODO: vaild stuff
+            cmd: cmdp
+        };
+        console.log(tmp);
+        
+        const rr = await axios.get('/api/server/' + data_login.server.name + "/command", {
+            params: tmp
+        });
+        console.log(rr);
+
+        if (rr.data) {
+            var d = rr.data;
+            if (d.code == 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: d.msg,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: d.msg
+                });
+            }
         } else {
             Swal.fire({
                 icon: 'error',
-                title: d.msg
+                title: "Maybe down?",
+                showConfirmButton: false,
+                timer: 1500
             });
         }
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: "Maybe down?",
-            showConfirmButton: false,
-            timer: 1500
-        });
+
+
     }
 
 });
@@ -94,7 +130,7 @@ cmd_login.addEventListener("submit", async function (e) {
     console.log(json);
 
     //TODO: add real login
-    const rr = await axios.post('/api/server/' + object.server, json);
+    const rr = await axios.post('/api/server/' + object.server + '/ping', json);
     if (rr.data) {
         var d = rr.data;
         if (d.code == 200) {
@@ -105,7 +141,30 @@ cmd_login.addEventListener("submit", async function (e) {
                 showConfirmButton: false,
                 timer: 1500
             });
-            data_login = object;
+
+            try {
+                data_login = {
+                    server: {
+                        name: object.server,
+                        version: d.data.version
+                    },
+                    user: {
+                        code: object.code,
+                        uid: object.uid
+                    }
+                };
+                console.log(data_login);
+            } catch (error) {
+                console.log(error);
+                Swal.fire({
+                    icon: 'error',
+                    title: "idk",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                return;
+            }
+
             Toggle("go_login");
             Toggle("go_cmd_raw");
 
@@ -126,6 +185,67 @@ cmd_login.addEventListener("submit", async function (e) {
     console.log(rr);
 });
 
+const textarea_cmd = document.getElementById('add_cmd_raw');
+
+// TODO: add multi func not just mosnter?
+
+const toadd_monster = document.getElementById('add_monster');
+toadd_monster.addEventListener('click', function handleClick() {
+
+    if (!CheckLogin()) return; // check login
+
+    var id = document.getElementById('search_monster').value;
+    if (!id) {
+        Swal.fire({
+            icon: 'error',
+            title: "Please fill in id",
+            showConfirmButton: false,
+            timer: 1500
+        });
+        return;
+    }
+
+    var set_level = document.getElementById('set_monster_level').value;
+    var set_num = document.getElementById('set_monster_num').value;
+
+    var final_input = "";
+    if (data_login.server.version == 1) {
+        // GIO stuff
+        // monster 20010101 5 20 {20010101=id_monster,5=total,20=level}
+        final_input = `monster ${id} ${set_num} ${set_level}`;
+    } else {
+        // GC stuff
+        // /s 20010101 lv20 x5
+        final_input = `/s ${id} x${set_num} lv${set_level}`;
+    }
+
+    textarea_cmd.value += final_input + "\r\n";
+
+    //console.log(data_login);
+    //console.log(id);
+    //console.log('element clicked');
+
+});
+
+// clear
+const btn_clear = document.getElementById('clear_cmd');
+btn_clear.addEventListener('click', function handleClick() {
+    textarea_cmd.value = '';
+});
+
+function CheckLogin() {
+    if (!data_login) {
+        Swal.fire({
+            icon: 'error',
+            title: "Not logged in yet",
+            showConfirmButton: false,
+            timer: 1500
+        });
+        return false;
+    }
+    return true;
+}
+
 function Toggle(name = "go_cmd_raw", foce = null) {
     var x = document.getElementById(name);
     if (foce) {
@@ -137,6 +257,18 @@ function Toggle(name = "go_cmd_raw", foce = null) {
     } else {
         x.style.display = "none";
     }
+}
+
+Count("monster_level");
+Count("monster_num");
+
+function Count(tes) {
+    var i = document.querySelector('#set_' + tes);
+    var o = document.querySelector('#view_' + tes);
+    o.innerHTML = i.value;
+    i.addEventListener('input', function () {
+        o.innerHTML = i.value;
+    }, false);
 }
 
 setup();

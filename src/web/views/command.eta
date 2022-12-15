@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%~ includeFile('./layout/head', it) %>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.css" />
+
+<body>
+  <main>
+
+    <h1 class="text-center p-3">Command Tool</h1>
+
+    <div class="container">
+
+      <!-- Monster -->
+
+      <div class="modal-dialog mb-3" id="bt_monster">
+        <div class="modal-content rounded-4 shadow">
+
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Spawn Monster</h1>
+          </div>
+
+          <div class="modal-body p-5 pt-0">
+
+            <label for="exampleDataList" class="form-label">ID/Nama</label>
+            <input class="form-control" list="list_monster" id="search_monster" placeholder="Type to search...">
+            <datalist id="list_monster">
+            </datalist>
+
+            <label class="form-label">Level: </label> <label class="form-label" id="view_monster_level">1</label>
+            <input type="range" class="form-range" min="1" max="200" value="1" id="set_monster_level">
+
+            <label class="form-label">Count/Num: </label> <label class="form-label" id="view_monster_num">1</label>
+            <input type="range" class="form-range" min="1" max="200" value="1" id="set_monster_num">
+
+            <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" id="add_monster">Add</button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- login -->
+
+      <div class="modal-dialog " id="go_login">
+        <div class="modal-content rounded-4 shadow">
+
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Command Access</h1>
+          </div>
+
+          <div class="modal-body p-5 pt-0">
+
+            <form id="cmd_login">
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control rounded-3" id="getuid" name="uid" placeholder="00001">
+                <label for="getuid">UID</label>
+                <small class="text-muted">
+                  UID is your in-game player id
+                </small>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control rounded-3" id="getcode" name="code" placeholder="0003">
+                <label for="getcode">Code</label>
+                <small class="text-muted">
+                  (GC=Get access code with /remote on in-game) (GIO=set no code then a code will be sent to mail then use that to input code here)
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <label for="getserver">Choose Server:</label>
+                <select class="form-select" id="getserver" name="server">
+                </select>
+              </div>
+
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Login</button>
+              <small class="text-muted">by clicking "Login" you agree to use this wisely and not to use it to troll people.</small>
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- cmd_raw -->
+
+
+      <div class="modal-dialog" id="go_cmd_raw" style="display:none">
+        <div class="modal-content rounded-4 shadow">
+
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Command</h1>
+          </div>
+
+          <div class="modal-body p-5 pt-0">
+
+            <form id="cmd_raw">
+
+              <div class="mb-3">
+                <textarea class="form-control" rows="3" name="get_cmd_raw" id="add_cmd_raw"></textarea>
+                <small class="text-muted">
+                  This is place for contents command
+                </small>
+              </div>
+
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Run</button>
+              <a class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" id="clear_cmd">Clear</a>
+
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- end -->
+
+      <p class="text-center py-3">
+        <a href="/" class="btn btn-primary">Back to Home</a>
+      </p>
+
+      <%~ includeFile('./layout/footer', it) %>
+
+    </div>
+  </main>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.js"></script>
+
+<script src="/js/cmd.js?t=<% (random) %>"></script>
+
+</html>

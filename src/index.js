@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const eta = require("eta");
 
+const axios = require('axios'); // TODO: remove this
+
 const api_gio = require('./gm/gio');
 const mylib = require("./lib");
 const config = require("./config.json");
@@ -152,7 +154,7 @@ bot.on("messageCreate", (message) => {
 
 
   // 969145030537281536 = log public (join/out) | 987073348418809928 = log private
-  if (!mylib.contains(message.channel.id, ['969145030537281536','987073348418809928'])) {
+  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928'])) {
     console.log(
       `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
     );
@@ -208,6 +210,13 @@ web.all('/', (req, res) => {
   })
 });
 
+web.all('/command', (req, res) => {
+  res.render("command", {
+    title: "Command Tool",
+    description: "Im lazy to write"
+  })
+});
+
 web.all('/api', (req, res) => {
   res.send('API YuukiPS');
 });
@@ -216,8 +225,8 @@ web.all('/api/server', (req, res) => {
   var obj = config.server;
   const r = Object.keys(obj).map(key => {
     var tmp = {};
-    tmp['name']=obj[key].title;
-    tmp['id']=key;
+    tmp['name'] = obj[key].title;
+    tmp['id'] = key;
     return tmp;
   });
   res.json(r);
@@ -229,12 +238,12 @@ web.all('/api/server/:id', async (req, res) => {
   if (req.params.id) {
     s = req.params.id;
     var g_config = config.server[s];
-    if(g_config){
+    if (g_config) {
       //console.log(g_config);      
-    }else{
-      return res.json({ 
+    } else {
+      return res.json({
         msg: "Config server not found",
-        code: 404 
+        code: 404
       });
     }
   };
@@ -245,20 +254,70 @@ web.all('/api/server/:id', async (req, res) => {
     return res.json(d);
   } catch (error) {
     console.log(error);
-    return res.json({ 
+    return res.json({
       msg: "Error",
-      code: 302 
+      code: 302
+    });
+  }
+})
+
+web.all('/api/server/:id/ping', async (req, res) => {
+  var s = "gio";
+
+  if (req.params.id) {
+    s = req.params.id;
+    var g_config = config.server[s];
+    if (g_config) {
+      // TODO: add check login      
+    } else {
+      return res.json({
+        msg: "Config server not found",
+        code: 404
+      });
+    }
+  };
+
+  try {
+
+    return res.json({
+      data: {
+        version: g_config.api.type
+      },
+      msg: "Hello",
+      code: 200
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      msg: "Error",
+      code: 302
     });
   }
 })
 
 web.all('/api/server/:id/command', async (req, res) => {
   var s = "gio";
+  
   if (req.params.id) {
     s = req.params.id;
+    var g_config = config.server[s];
+    if (g_config) {
+      // TODO: add check login      
+    } else {
+      return res.json({
+        msg: "Config server not found",
+        code: 404
+      });
+    }
   };
+
+  console.log(g_config);
+  
   let uid = req.query.uid;
   let cmd = req.query.cmd;
+  let code = req.query.code;
+
   if (!uid) {
     return res.json({
       msg: "no uid",
@@ -271,12 +330,36 @@ web.all('/api/server/:id/command', async (req, res) => {
       code: 301
     });
   }
+
   try {
-    let d = await api_gio.GM(uid, cmd);
-    return res.json(d);
+
+    if(g_config.api.type == 1){
+      // GIO
+      let d = await api_gio.GM(uid, cmd);
+      return res.json(d);
+    }else if(g_config.api.type == 2){
+      // GC
+      // TODO: move this
+      const response = await axios.get(g_config.api.url+"api/command", { params: {
+        token: code,
+        cmd: cmd,
+        player: uid
+      } });
+      const d = response.data;
+      return res.json({
+        msg: d.message,
+        code: d.retcode,
+        data:d.data
+      });
+    }
+    
   } catch (error) {
     console.log(error);
-    return res.json({ error: 302 });
+    console.log("Server Error: "+s);
+    return res.json({ 
+      msg: "Error Get",
+      code: 302
+    });
   }
 })
 
@@ -284,6 +367,6 @@ if (config.startup.webserver) {
   var listener = web.listen(3000, function () {
     console.log('Server started on port %d', listener.address().port);
   });
-}else{
+} else {
   console.log("skip run webserver...");
 }

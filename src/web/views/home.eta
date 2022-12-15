@@ -2,98 +2,53 @@
 <html lang="en">
 
 <%~ includeFile('./layout/head', it) %>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.css" />
+<link rel="stylesheet" href="/css/home.css?t=<% (random) %>">
 
 <body>
-  <main>
-    <div class="container py-4">
 
-      <header class="pb-3 mb-4 border-bottom">
-        <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-          <span class="fs-4">YuukiPS</span>
-        </a>
-      </header>
 
-      <div class="modal-dialog" id="go_login">
-        <div class="modal-content rounded-4 shadow">
+  <div class="d-flex min-vh-100" lc-helper="background" style="background: url(https://ps.yuuki.me/image/banner1.png) center center / cover no-repeat rgb(68, 68, 68); background-blend-mode: overlay; --darkreader-inline-bgcolor:#33373a;">
 
-          <div class="modal-header p-5 pb-4 border-bottom-0">
-            <h1 class="fw-bold mb-0 fs-2">Command Access</h1>
-          </div>
+    <div class="align-self-center text-center text-light col-md-8 offset-md-2">
 
-          <div class="modal-body p-5 pt-0">
-
-            <form id="cmd_login">
-
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control rounded-3" id="getuid" name="uid" placeholder="00001">
-                <label for="getuid">UID</label>
-                <small class="text-muted">
-                  UID is your in-game player id
-                </small>
-              </div>
-
-              <div class="form-floating mb-3">
-                <input type="password" class="form-control rounded-3" id="getcode" name="code" placeholder="0003">
-                <label for="getcode">Code</label>
-                <small class="text-muted">
-                  (GC=Get access code with /remote on in-game) (GIO=set no code then a code will be sent to mail then use that to input code here)
-                </small>
-              </div>
-
-              <div class="mb-3">
-                <label for="getserver">Choose Server:</label>
-                <select class="form-select" id="getserver" name="server">
-                </select>
-              </div>
-
-              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Login</button>
-              <small class="text-muted">by clicking "Login" you agree to use this wisely and not to use it to troll people.</small>
-            </form>
-
-          </div>
+      <div class="lc-block mb-4">
+        <div editable="rich">
+          <h1 class="display-1 fw-bolder">Welcome to YuukiPS</h1>
         </div>
       </div>
 
-
-      <div class="modal-dialog" id="go_cmd_raw" style="display:none">
-        <div class="modal-content rounded-4 shadow">
-
-          <div class="modal-header p-5 pb-4 border-bottom-0">
-            <h1 class="fw-bold mb-0 fs-2">Command</h1>
-          </div>
-
-          <div class="modal-body p-5 pt-0">
-
-            <form id="cmd_raw">
-
-              <div class="mb-3">
-                <textarea class="form-control" rows="3" name="get_cmd_raw"></textarea>
-                <small class="text-muted">
-                 This is place for contents command
-                </small>
-              </div>
-
-              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Run</button>
-
-
-            </form>
-
-          </div>
-        </div>
+      <div class="text-light">
+        <p class="lead">YuukiPS is a private server service where you can play other</p>
+        <p class="lead">than the official server and are freer to do anything.</p>
       </div>
 
-      <%~ includeFile('./layout/footer', it) %>
+      <div class="mt-4">
+        <div class="btn-group btn-group-lg" role="group" aria-label="Button group with nested dropdown">
+
+          <a class="btn btn-primary" href="/command">Command Web</a>
+
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              Play
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/genshin">Genshin Impact</a></li>
+              <li><a class="dropdown-item" href="/starrail">Star Rail</a></li>
+            </ul>
+          </div>
+
+          <a class="btn btn-primary" href="https://github.com/YuukiPS/DockerGS" target="_blank" rel="sponsored">Create Server</a>
+
+        </div>
+      </div>
 
     </div>
-  </main>
+  </div>
+
+  <%~ includeFile('./layout/footer', it) %>
+
 </body>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.js"></script>
-
-<script src="/js/cmd.js?t=<% (random) %>"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </html>
