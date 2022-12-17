@@ -1,23 +1,33 @@
 const { SlashCommandBuilder } = require("discord.js");
-const api_gio = require('../gm/gio');
+const api_control = require('../gm/control');
+const lib = require("../lib");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("online")
-        .setDescription("Check online Server GIO"),
+        .setDescription("Check Server Online Player"),
     /**
      * @param {CommandInteraction} interaction
      * @returns {void}
      */
     async execute(interaction) {        
         try {
-            // 1101 = check online?
-            let d = await api_gio.Server();
-            if (d.code == 200) {
-                await interaction.reply(`Total Player currently ${d.data.online} online on GIO server with ${Object.keys(d.data.server).length} sub server`);
-            } else {
-                await interaction.reply(`Error msg: ${d.msg}, retcode: ${d.code}`);
-            }
+
+            interaction.reply({ content: "Please wait...", ephemeral: true });
+            await lib.sleep(3);
+
+            var tes = "";
+            var total = 0;
+            let d = await api_control.Server();
+            d.forEach(function(i){ 
+                //console.log(i);
+                tes += `${i.name} (${i.id}) > Player ${i.server.player}\n`
+                total = total + i.server.player;
+            });
+
+            tes += `\nTotal Player ${total}`
+            return await interaction.editReply({ content: `${tes}`, ephemeral: true });
+
         } catch (err) {
             console.log("Error: ",err);
             await interaction.reply("Unknown problem");

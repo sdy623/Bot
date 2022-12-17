@@ -105,11 +105,11 @@ module.exports = {
             };
         }
     },
-    Server: async function () {
+    Server: async function (server_url) {
         try {
             // 1101 = Server Status
             let params = this.CMD(1101);
-            const response = await axios.get(config.api_server_gio, { params: params });
+            const response = await axios.get(server_url, { params: params });
             const result = response.data;
             return {
                 data: {
@@ -120,7 +120,7 @@ module.exports = {
                 msg: "OK"
             };
         } catch (error) {
-            console.log(error);
+            //console.log("Error: "+server_url);
             return {
                 msg: "Error get server",
                 code: 401

@@ -2,9 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const eta = require("eta");
 
-const axios = require('axios'); // TODO: remove this
+const api_control = require('./gm/control');
 
-const api_gio = require('./gm/gio');
 const mylib = require("./lib");
 const config = require("./config.json");
 var eta_plugin_random = require("./web/plugin/random")
@@ -231,26 +230,9 @@ web.all('/api/server', (req, res) => {
   });
   res.json(r);
 });
-
 web.all('/api/server/:id', async (req, res) => {
-  var s = "gio";
-
-  if (req.params.id) {
-    s = req.params.id;
-    var g_config = config.server[s];
-    if (g_config) {
-      //console.log(g_config);      
-    } else {
-      return res.json({
-        msg: "Config server not found",
-        code: 404
-      });
-    }
-  };
-
-  // get server stats/info
   try {
-    let d = await api_gio.Server();
+    let d = await api_control.Server();
     return res.json(d);
   } catch (error) {
     console.log(error);
@@ -297,70 +279,8 @@ web.all('/api/server/:id/ping', async (req, res) => {
 })
 
 web.all('/api/server/:id/command', async (req, res) => {
-  var s = "gio";
-  
-  if (req.params.id) {
-    s = req.params.id;
-    var g_config = config.server[s];
-    if (g_config) {
-      // TODO: add check login      
-    } else {
-      return res.json({
-        msg: "Config server not found",
-        code: 404
-      });
-    }
-  };
-
-  console.log(g_config);
-  
-  let uid = req.query.uid;
-  let cmd = req.query.cmd;
-  let code = req.query.code;
-
-  if (!uid) {
-    return res.json({
-      msg: "no uid",
-      code: 301
-    });
-  }
-  if (!cmd) {
-    return res.json({
-      msg: "no cmd",
-      code: 301
-    });
-  }
-
-  try {
-
-    if(g_config.api.type == 1){
-      // GIO
-      let d = await api_gio.GM(uid, cmd);
-      return res.json(d);
-    }else if(g_config.api.type == 2){
-      // GC
-      // TODO: move this
-      const response = await axios.get(g_config.api.url+"api/command", { params: {
-        token: code,
-        cmd: cmd,
-        player: uid
-      } });
-      const d = response.data;
-      return res.json({
-        msg: d.message,
-        code: d.retcode,
-        data:d.data
-      });
-    }
-    
-  } catch (error) {
-    console.log(error);
-    console.log("Server Error: "+s);
-    return res.json({ 
-      msg: "Error Get",
-      code: 302
-    });
-  }
+  let d = await api_control.GM(req.params.id, req.query.uid, req.query.cmd, req.query.code);
+  return res.json(d);
 })
 
 if (config.startup.webserver) {
