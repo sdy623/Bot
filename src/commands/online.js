@@ -19,7 +19,7 @@ module.exports = {
             var tes = "";
             var total = 0;
             let d = await api_control.Server();
-            d.forEach(function(i){ 
+            d.data.forEach(function(i){ 
                 //console.log(i);
                 tes += `${i.name} (${i.id}) > Player ${i.server.player}\n`
                 total = total + i.server.player;

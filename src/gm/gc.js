@@ -36,7 +36,7 @@ module.exports = {
                 data: d.status
             }
         } catch (error) {
-            console.log(error);
+            //console.log(error);
             return {
                 msg: "Error Get",
                 code: 302
