@@ -4,11 +4,12 @@ const api_gc = require('./gc');
 const mylib = require("../lib");
 const config = require("../config.json");
 
-//const crypto = require("crypto");
-//const config = require("../config.json");
 const axios = require('axios');
+
 // TODO: better use datebase
-var key = [];
+let key = [];
+// Thank you ChatGPT
+let cache_serverlist;
 
 module.exports = {
     Config: function (server_id) {
@@ -84,8 +85,17 @@ module.exports = {
         }
 
     },
-    Server: async function () {
+    Server: async function (server_id) {
         var obj = config.server;
+
+        if (cache_serverlist && Date.now() < cache_serverlist.cache) {
+            cache_serverlist['msg'] = "OK but cache";
+            if(server_id){
+                return cache_serverlist.data.find((j) => j.id == server_id);
+            }
+            return cache_serverlist;
+        }
+
         const r = await Promise.all(Object.keys(obj).map(async (key) => {
             var tmp = {};
             var d = obj[key];
@@ -115,14 +125,26 @@ module.exports = {
             } catch (error) {
                 console.log(error);
             }
-            
+
             tmp['name'] = d.title;
             tmp['id'] = key;
             tmp['server'] = o;
             //console.log(d);
             return tmp;
         }));
-        return r;
+
+        // fetch data from external source
+        cache_serverlist = {
+            data: r,
+            msg: "OK but update",
+            code: 200,
+            cache: Date.now() + (1 * 60 * 1000) // 1 minutes
+        };
+        if(server_id){
+            return cache_serverlist.data.find((j) => j.id == server_id);
+        }
+
+        return cache_serverlist;
     },
     Verified: function (tes) {
         /*

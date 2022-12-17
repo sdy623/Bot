@@ -151,7 +151,6 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 
 bot.on("messageCreate", (message) => {
 
-
   // 969145030537281536 = log public (join/out) | 987073348418809928 = log private
   if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928'])) {
     console.log(
@@ -216,23 +215,41 @@ web.all('/command', (req, res) => {
   })
 });
 
+// Web
+web.all('/genshin', (req, res) => {
+  res.render("genshin", {
+    title: "Download Genshin",
+    description: "Im lazy to write"
+  })
+});
+// API LIST DOWNLOAD
+web.all('/genshin/list', (req, res) => {
+  res.send('TODO');
+});
+// API DOWNLOAD LINK
+web.all('/genshin/:id', (req, res) => {
+  res.send('TODO');
+});
+
 web.all('/api', (req, res) => {
   res.send('API YuukiPS');
 });
 
-web.all('/api/server', (req, res) => {
-  var obj = config.server;
-  const r = Object.keys(obj).map(key => {
-    var tmp = {};
-    tmp['name'] = obj[key].title;
-    tmp['id'] = key;
-    return tmp;
-  });
-  res.json(r);
+web.all('/api/server', async (req, res) => {
+  try {
+    let d = await api_control.Server();
+    return res.json(d);
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      msg: "Error",
+      code: 302
+    });
+  }
 });
 web.all('/api/server/:id', async (req, res) => {
   try {
-    let d = await api_control.Server();
+    let d = await api_control.Server(req.params.id);
     return res.json(d);
   } catch (error) {
     console.log(error);

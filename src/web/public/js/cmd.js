@@ -7,11 +7,11 @@ async function setup() {
         // list server
         const r = await axios.get('/api/server');
         if (r.data) {
-            var data = r.data;
+            var s = r.data;
 
-            //console.log(data);
+            //console.log(s);
 
-            data.forEach(item => {
+            s.data.forEach(item => {
                 const optionElement = document.createElement('option');
                 optionElement.setAttribute('value', item.id);
                 optionElement.innerText = item.name;
