@@ -5,7 +5,9 @@ async function setup() {
     try {
 
         // list server
-        const r = await axios.get('/api/server');
+        const r = await axios.get('/api/server', {
+            timeout: 1000 * 5
+        });
         if (r.data) {
             var s = r.data;
 
@@ -21,7 +23,9 @@ async function setup() {
         }
 
         // list monster
-        const r_monster = await axios.get(API_JSON_DATA + 'monsterList.json');
+        const r_monster = await axios.get(API_JSON_DATA + 'monsterList.json', {
+            timeout: 1000 * 5
+        });
         var data_monster = r_monster.data;
         if (data_monster) {
             //console.log(data_monster);
@@ -82,9 +86,10 @@ cmd_raw.addEventListener("submit", async function (e) {
             cmd: cmdp
         };
         console.log(tmp);
-        
+
         const rr = await axios.get('/api/server/' + data_login.server.name + "/command", {
-            params: tmp
+            params: tmp,
+            timeout: 1000 * 5
         });
         console.log(rr);
 

@@ -49,7 +49,10 @@ module.exports = {
         try {
             // 1005 - email
             let params = this.CMD(1005, null, null, mail_json);
-            const response = await axios.get(config.api_server_gio, { params: params });
+            const response = await axios.get(config.api_server_gio, { 
+                params: params,
+                timeout: 5000
+            });
             const result = response.data;
             console.log(result);
             if (result.msg == 'succ' && result.retcode == 0) {
@@ -74,7 +77,10 @@ module.exports = {
         try {
             // 1116 = GM
             let params = this.CMD(1116, uid, set_command, null);
-            const response = await axios.get(config.api_server_gio, { params: params });
+            const response = await axios.get(config.api_server_gio, {
+                params: params,
+                timeout: 5000
+            });
             const result = response.data;
             console.log(result);
             if (result.msg == 'succ' && result.retcode == 0) {
@@ -86,7 +92,7 @@ module.exports = {
                 // if have data
                 if (result.data) {
                     return {
-                        msg: result.data.retmsg,
+                        msg: result.data.retmsg + result.msg,
                         code: result.retcode
                     };
                 } else {
@@ -109,7 +115,10 @@ module.exports = {
         try {
             // 1101 = Server Status
             let params = this.CMD(1101);
-            const response = await axios.get(server_url, { params: params });
+            const response = await axios.get(server_url, {
+                params: params,
+                timeout: 5000
+            });
             const result = response.data;
             return {
                 data: {

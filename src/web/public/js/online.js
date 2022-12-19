@@ -2,7 +2,9 @@ async function online() {
     try {
 
         // list server
-        const r = await axios.get('/api/server');
+        const r = await axios.get('/api/server', {
+            timeout: 1000 * 10
+        });
         if (r.data) {
             var s = r.data;
             //console.log(s);
