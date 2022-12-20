@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const config = require("../config.json");
 const axios = require('axios');
 
 module.exports = {
@@ -27,7 +26,7 @@ module.exports = {
         }
         return this.Sign(params);
     },
-    Mail: async function (uid = "10005", title = "Tes", sender = 'YuukiPS', expire_time = null, content = 'tes', item_list = null, is_collectible = false) {
+    Mail: async function (url,uid = "10005", title = "Tes", sender = 'YuukiPS', expire_time = null, content = 'tes', item_list = null, is_collectible = false) {
         if (!expire_time) {
             const now = new Date();
             expire_time = Math.round(now.getTime() / 1000) + 60 ** 2 * 24 * 7;
@@ -49,7 +48,7 @@ module.exports = {
         try {
             // 1005 - email
             let params = this.CMD(1005, null, null, mail_json);
-            const response = await axios.get(config.api_server_gio, { 
+            const response = await axios.get(url, {
                 params: params,
                 timeout: 5000
             });
@@ -73,19 +72,33 @@ module.exports = {
             };
         }
     },
-    GM: async function (uid, set_command) {
+    GM: async function (url,uid, set_command, set_timeout = 10) {
         try {
+
             // 1116 = GM
             let params = this.CMD(1116, uid, set_command, null);
-            const response = await axios.get(config.api_server_gio, {
-                params: params,
-                timeout: 5000
-            });
-            const result = response.data;
+
+            let result = null;
+            try {
+                var response = await axios.get(url, {
+                    params: params,
+                    timeout: 1000 * set_timeout
+                });
+                result = response.data;
+            } catch (error) {
+                console.log(error);
+                result = {
+                    msg: "Out of time doing this command, maybe this command is not recognized or too heavy.",
+                    code: 302
+                };
+            }
+
+            // LOG RESPON
             console.log(result);
+
             if (result.msg == 'succ' && result.retcode == 0) {
                 return {
-                    msg: `Command has been sent`,
+                    msg: `Command has been received`,
                     code: 200
                 };
             } else {

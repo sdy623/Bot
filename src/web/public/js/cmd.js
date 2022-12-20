@@ -89,7 +89,7 @@ cmd_raw.addEventListener("submit", async function (e) {
 
         const rr = await axios.get('/api/server/' + data_login.server.name + "/command", {
             params: tmp,
-            timeout: 1000 * 5
+            timeout: 1000 * 15
         });
         console.log(rr);
 

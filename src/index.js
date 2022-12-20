@@ -21,7 +21,7 @@ const {
 
 process.on("unhandledRejection", (error) => {
   console.error("Unhandled promise rejection:", error);
-  process.exit(1);
+  //process.exit(1);
 });
 
 // debug, remove some later

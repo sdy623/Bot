@@ -65,7 +65,7 @@ module.exports = {
 
             if (configis.data.api.type == 1) {
                 // GIO
-                return await api_gio.GM(uid, cmd);
+                return await api_gio.GM(configis.data.api.url,uid, cmd);
             } else if (configis.data.api.type == 2) {
                 // GC
                 return await api_gc.GM(configis.data.api.url, uid, cmd, code);
