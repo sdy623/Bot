@@ -2,6 +2,9 @@
 <html lang="en">
 
 <%~ includeFile('./layout/head', it) %>
+
+<%~ includeFile('./lib/top', it) %>
+
 <link rel="stylesheet" href="/css/home.css?t=<% (random) %>">
 
 <body>
@@ -13,7 +16,7 @@
 
       <div class="lc-block mb-4">
         <div editable="rich">
-          <h1 class="display-1 fw-bolder">Welcome to YuukiPS</h1>
+          <h1 class="display-1 fw-bolder"><%= it.title %></h1>
         </div>
       </div>
 
@@ -32,8 +35,8 @@
               Play
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/genshin">Genshin Impact</a></li>
-              <li><a class="dropdown-item" href="/starrail">Star Rail</a></li>
+              <li><a class="dropdown-item" href="/game/genshin">Genshin Impact</a></li>
+              <li><a class="dropdown-item" href="/game/starrail">Star Rail</a></li>
             </ul>
           </div>
 
@@ -49,6 +52,6 @@
 
 </body>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<%~ includeFile('./lib/down', it) %>
 
 </html>

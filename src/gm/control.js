@@ -39,6 +39,13 @@ module.exports = {
 
             console.log(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`);
 
+            if (mylib.contains(cmd, ['item add all'])) {
+                return {
+                    msg: "This command has been temporarily blocked",
+                    code: 403
+                }
+            }
+
             // check uid
             if (!uid) {
                 return {
@@ -65,7 +72,7 @@ module.exports = {
 
             if (configis.data.api.type == 1) {
                 // GIO
-                return await api_gio.GM(configis.data.api.url,uid, cmd);
+                return await api_gio.GM(configis.data.api.url, uid, cmd);
             } else if (configis.data.api.type == 2) {
                 // GC
                 return await api_gc.GM(configis.data.api.url, uid, cmd, code);
@@ -90,7 +97,7 @@ module.exports = {
 
         if (cache_serverlist && Date.now() < cache_serverlist.cache) {
             cache_serverlist['msg'] = "OK but cache";
-            if(server_id){
+            if (server_id) {
                 return cache_serverlist.data.find((j) => j.id == server_id);
             }
             return cache_serverlist;
@@ -100,27 +107,46 @@ module.exports = {
             var tmp = {};
             var d = obj[key];
 
+            //console.log(d);
+
             var o = {
                 online: false,
-                player: 0
+                player: 0,
+                game: d.game,
+                version: d.version,
+                public: d.public,
+                cpu: "???",
+                ram: "???",
+                commit: "???"
             };
 
             try {
                 if (d.api.type == 1) {
+
                     var ts = await api_gio.Server(d.api.url);
                     //console.log(ts);
                     if (ts.code == 200) {
+                        // TODO: get stats ram cpu via shell
                         o['online'] = true;
                         o['player'] = ts.data.online;
                         o['sub'] = ts.data.server;
                     }
+
                 } else if (d.api.type == 2) {
+
                     var ts = await api_gc.Server(d.api.url);
                     //console.log(ts);
                     if (ts.code == 0) {
                         o['online'] = true;
                         o['player'] = ts.data.playerCount;
+                        if (ts.data.MemoryCurrently) {
+                            o['ram'] = ts.data.MemoryCurrently + " MB (" + ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) + " %)";
+                        }
+                        if (ts.data.DockerGS) {
+                            o['commit'] = ts.data.DockerGS;
+                        }
                     }
+
                 }
             } catch (error) {
                 console.log(error);
@@ -140,7 +166,7 @@ module.exports = {
             code: 200,
             cache: Date.now() + (1 * 60 * 1000) // 1 minutes
         };
-        if(server_id){
+        if (server_id) {
             return cache_serverlist.data.find((j) => j.id == server_id);
         }
 

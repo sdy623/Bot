@@ -4,6 +4,8 @@ const eta = require("eta");
 
 const api_control = require('./gm/control');
 
+const api_genshin = require('./game/genshin/api'); // TODO: use control version game by game type
+
 const mylib = require("./lib");
 const config = require("./config.json");
 var eta_plugin_random = require("./web/plugin/random")
@@ -216,23 +218,36 @@ web.all('/command', (req, res) => {
 });
 
 // Web
-web.all('/genshin', (req, res) => {
-  res.render("genshin", {
+web.all('/game/genshin', (req, res) => {
+  res.render("genshin_list", {
     title: "Download Genshin",
     description: "Im lazy to write"
   })
 });
-// API LIST DOWNLOAD
-web.all('/genshin/list', (req, res) => {
-  res.send('TODO');
-});
-// API DOWNLOAD LINK
-web.all('/genshin/:id', (req, res) => {
-  res.send('TODO');
+// Web Download
+web.all('/game/genshin/:id', (req, res) => {
+  res.render("genshin_dl", {
+    title: "Download Genshin",
+    description: "Im lazy to write"
+  })
 });
 
 web.all('/api', (req, res) => {
   res.send('API YuukiPS');
+});
+
+// Testing
+web.all('/api/game/genshin', async (req, res) => {
+  try {
+    let d = await api_genshin.INFO();
+    return res.json(d);
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      msg: "Error",
+      code: 302
+    });
+  }
 });
 
 web.all('/api/server', async (req, res) => {
