@@ -32,11 +32,25 @@ module.exports = {
       });
     }
 
-    const id_role = "1039554857746583573"; // 964119462188040202
-    const ismember = interaction.guild.roles.cache.get(id_role);
+    const id_role = "1039554857746583573";
+    const id_role_mute = "1040051266912534598";
+
+    const check_role_member = interaction.guild.roles.cache.get(id_role);
+    const check_role_mute = interaction.guild.roles.cache.get(id_role_mute);
     // check if role available
-    if (ismember) {
-      // check if have role
+    if (check_role_member) {
+
+      // check mute
+      if (check_role_mute) {
+        if (interaction.member.roles.cache.has(id_role_mute)) {
+          return await interaction.reply({
+            content: "You can't verify because it's still muted",
+            ephemeral: true,
+          });
+        }
+      }
+
+      // check member
       if (interaction.member.roles.cache.has(id_role)) {
         return await interaction.reply({
           content: "You already verified",
@@ -51,7 +65,7 @@ module.exports = {
     }
 
     // add role
-    interaction.member.roles.add(ismember);
+    interaction.member.roles.add(check_role_member);
 
     await interaction.reply({
       content: "You've been verified!",
