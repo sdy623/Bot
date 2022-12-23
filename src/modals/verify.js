@@ -1,3 +1,4 @@
+const log = require('../util/logger');
 const { ModalSubmitInteraction } = require("discord.js");
 const crypto = require("crypto");
 const config = require("../config.json");
@@ -9,7 +10,7 @@ module.exports = {
   async execute(interaction) {
     //1039554337438961714 real, 987879230585069609 tes bot
     if (interaction.channelId != "1039554337438961714") {
-      console.log("Hmm not here: " + interaction.channelId);
+      log.info("Hmm not here: " + interaction.channelId);
       return await interaction.reply({
         content: "Can't do it here",
         ephemeral: true,

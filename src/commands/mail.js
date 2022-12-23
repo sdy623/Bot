@@ -1,4 +1,7 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
+
+const log = require('../util/logger');
+
 const axios = require('axios');
 const api_gio = require('../gm/gio');
 const config = require("../config.json");
@@ -33,7 +36,7 @@ module.exports = {
                 var more_item = set_command.split(",");
                 var itemtoadd = [];
                 more_item.forEach(function (data_msg) {
-                    console.log(data_msg);
+                    log.info(data_msg);
                     let ks = data_msg.replace("gitem-", "");
                     var valb2 = ks.split("-");
                     itemtoadd.push({
@@ -53,7 +56,7 @@ module.exports = {
                 return await interaction.reply({ content: `Error msg: ${input.msg}, code: ${input.code}`, ephemeral: true });
             }
         } catch (err) {
-            console.log("Error: ", err);
+            log.error("Error: ", err);
             return await interaction.reply({ content: "error2", ephemeral: true });
         }
     },

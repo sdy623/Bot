@@ -1,4 +1,7 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
+
+const log = require('../util/logger');
+
 const api_control = require('../gm/control');
 const lib = require("../lib");
 
@@ -34,8 +37,6 @@ module.exports = {
             let set_code = interaction.options.getString('code');
             let id_user = interaction.user.id;
 
-            //console.log("melonaaaaaaa");
-
             interaction.reply({ content: "Please wait...", ephemeral: true });
             await lib.sleep(3);
 
@@ -43,7 +44,7 @@ module.exports = {
 
             return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ephemeral: true });
         } catch (err) {
-            console.log("Error: ", err);
+            log.error("Error: ", err);
             return await interaction.editReply({ content: "Unknown error", ephemeral: true });
         }
     },

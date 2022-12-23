@@ -1,5 +1,7 @@
 //const crypto = require("crypto");
 //const config = require("../config.json");
+const log = require('../util/logger');
+
 const axios = require('axios');
 
 module.exports = {
@@ -20,7 +22,7 @@ module.exports = {
                 data: d.data
             }
         } catch (error) {
-            console.log(error);
+            log.error(error);
             return {
                 msg: "Error Get",
                 code: 302
@@ -39,7 +41,7 @@ module.exports = {
                 data: d.status
             }
         } catch (error) {
-            //console.log(error);
+            //log.error(error);
             return {
                 msg: "Error Get",
                 code: 302

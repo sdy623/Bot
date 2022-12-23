@@ -1,4 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
+
+const log = require('../util/logger');
+
 const api_control = require('../gm/control');
 const lib = require("../lib");
 
@@ -20,7 +23,6 @@ module.exports = {
             var total = 0;
             let d = await api_control.Server();
             d.data.forEach(function(i){ 
-                //console.log(i);
                 tes += `${i.name} (${i.id}) > Player ${i.server.player}\n`
                 total = total + i.server.player;
             });
@@ -29,7 +31,7 @@ module.exports = {
             return await interaction.editReply({ content: `${tes}`, ephemeral: true });
 
         } catch (err) {
-            console.log("Error: ",err);
+            log.error("Error: ",err);
             await interaction.reply("Unknown problem");
         }
     },

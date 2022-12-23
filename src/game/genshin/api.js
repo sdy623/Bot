@@ -1,5 +1,6 @@
 //const crypto = require("crypto");
 //const config = require("../config.json");
+const log = require('../../util/logger');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
@@ -28,7 +29,7 @@ module.exports = {
                     fs.readdirSync(file_cn).forEach(cn2 => {
                         var x = path.join(file_cn, cn2);
                         let jsonData = read_json(x);
-                        //console.log(jsonData);
+                        //log.info(jsonData);
                         data.push(jsonData);
                     });
                 });
@@ -40,7 +41,7 @@ module.exports = {
                 data: data
             };
         } catch (error) {
-            console.log(error);
+            log.error(error);
             return {
                 msg: "Error Get",
                 code: 302

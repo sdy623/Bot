@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const eta = require("eta");
 
-const api_control = require('./gm/control');
+const log = require('./util/logger');
 
+const api_control = require('./gm/control');
 const api_genshin = require('./game/genshin/api'); // TODO: use control version game by game type
 
 const mylib = require("./lib");
@@ -12,6 +13,8 @@ var eta_plugin_random = require("./web/plugin/random")
 
 const fs = require("node:fs");
 const path = require("node:path");
+
+log.info('Yuuki Web Server 2 Up');
 
 const {
   Client,
@@ -22,7 +25,7 @@ const {
 } = require("discord.js");
 
 process.on("unhandledRejection", (error) => {
-  console.error("Unhandled promise rejection:", error);
+  log.error("Unhandled promise rejection:", error);
   //process.exit(1);
 });
 
@@ -57,12 +60,10 @@ const bot = new Client({
   ],
 });
 
-/*
 bot.on(Events.Error, error => {
-  console.error('Error Bot', error);
+  log.error('Error Bot', error);
   //process.exit(1);
 });
-*/
 
 // Commands
 bot.commands = new Collection();
@@ -85,14 +86,14 @@ for (const file of modalsFiles) {
   const filePath = path.join(modalsPath, file);
   const m = require(filePath);
   var name = file.replace(".js", "");
-  //console.log(name);
+  //log.info(name);
   bot.modals.set(name, m);
 }
 
 bot.on(Events.InteractionCreate, async (interaction) => {
 
   // log
-  console.log(
+  log.info(
     `interaction from ${interaction.commandName} - ${interaction.user.id} (Channel: ${interaction.channel.name} - ${interaction.channel.id})`
   );
 
@@ -112,14 +113,14 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 
   }
 
-  // If modal with inpu command
+  // If modal with input command
   if (interaction.isModalSubmit()) {
     const m = bot.modals.get(interaction.customId);
     if (!m) return;
     try {
       await m.execute(interaction);
     } catch (error) {
-      console.error(error);
+      log.error(error);
       await interaction.reply({
         content: "Modals is not recognized :(",
         ephemeral: true,
@@ -141,7 +142,7 @@ bot.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true,
       });
     } catch (error_skip) {
-      console.error(error_real);
+      log.error(error_real);
     }
   }
 });
@@ -153,15 +154,15 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 
 bot.on("messageCreate", (message) => {
 
-  // 969145030537281536 = log public (join/out) | 987073348418809928 = log private
-  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928'])) {
-    console.log(
+  // 969145030537281536,988248508429647922 = log public (join/out/levelup) | 987073348418809928 = log private
+  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928','988248508429647922'])) {
+    log.info(
       `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
     );
   }
 
   if (message.interaction) {
-    console.log("interaction message: " + message.interaction.commandName);
+    log.info("interaction message: " + message.interaction.commandName);
   }
 
   // ignore messages from bots
@@ -181,10 +182,10 @@ bot.on("messageCreate", (message) => {
 });
 
 if (config.startup.bot) {
-  console.log("bot run....");
+  log.info("bot run....");
   bot.login(config.token);
 } else {
-  console.log("bot skip run....");
+  log.info("bot skip run....");
 }
 
 const web = express();
@@ -242,7 +243,7 @@ web.all('/api/game/genshin', async (req, res) => {
     let d = await api_genshin.INFO();
     return res.json(d);
   } catch (error) {
-    console.log(error);
+    log.error(error);
     return res.json({
       msg: "Error",
       code: 302
@@ -255,7 +256,7 @@ web.all('/api/server', async (req, res) => {
     let d = await api_control.Server();
     return res.json(d);
   } catch (error) {
-    console.log(error);
+    log.error(error);
     return res.json({
       msg: "Error",
       code: 302
@@ -267,7 +268,7 @@ web.all('/api/server/:id', async (req, res) => {
     let d = await api_control.Server(req.params.id);
     return res.json(d);
   } catch (error) {
-    console.log(error);
+    log.error(error);
     return res.json({
       msg: "Error",
       code: 302
@@ -302,7 +303,7 @@ web.all('/api/server/:id/ping', async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    log.error(error);
     return res.json({
       msg: "Error",
       code: 302
@@ -317,8 +318,8 @@ web.all('/api/server/:id/command', async (req, res) => {
 
 if (config.startup.webserver) {
   var listener = web.listen(3000, function () {
-    console.log('Server started on port %d', listener.address().port);
+    log.info('Server started on port %d', listener.address().port);
   });
 } else {
-  console.log("skip run webserver...");
+  log.info("skip run webserver...");
 }

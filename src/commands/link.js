@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 
+const log = require('../util/logger');
+
 const api_genshin = require('../game/genshin/api'); // TODO: use control version game by game type
 
 const lib = require("../lib");
@@ -26,8 +28,6 @@ module.exports = {
             let set_version = interaction.options.getString('version');
             let id_user = interaction.user.id;
 
-            console.log("melonaaaaaaa");
-
             interaction.reply({ content: "Please wait...", ephemeral: true });
 
             await lib.sleep(2);
@@ -37,7 +37,6 @@ module.exports = {
             var info = `Currently Available ` + d.data.length + " Version\n\n";
 
             d.data.forEach(function (i) {
-                //console.log(i);
 
                 // TODO: check pre-download
                 var version = i.data.game.latest.version;
@@ -57,7 +56,7 @@ module.exports = {
 
             return await interaction.editReply({ content: info, ephemeral: true });
         } catch (err) {
-            console.log("Error: ", err);
+            log.error("Error: ", err);
             return await interaction.editReply({ content: "Unknown error", ephemeral: true });
         }
     },

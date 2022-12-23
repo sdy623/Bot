@@ -7,6 +7,8 @@ const {
   CommandInteraction,
 } = require("discord.js");
 
+const log = require('../util/logger');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("verify")
@@ -35,7 +37,7 @@ module.exports = {
     try {
       await interaction.showModal(modal);
     } catch (ex) {
-      console.log(ex);
+      log.error(ex);
     }
     
   },

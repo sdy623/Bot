@@ -1,3 +1,4 @@
+const log = require('../util/logger');
 const crypto = require("crypto");
 const axios = require('axios');
 
@@ -44,7 +45,7 @@ module.exports = {
             item_list: item_str,
             is_collectible
         };
-        console.log(mail_json);
+        log.info(mail_json);
         try {
             // 1005 - email
             let params = this.CMD(1005, null, null, mail_json);
@@ -53,7 +54,7 @@ module.exports = {
                 timeout: 5000
             });
             const result = response.data;
-            console.log(result);
+            log.info(result);
             if (result.msg == 'succ' && result.retcode == 0) {
                 return {
                     msg: `Message has been sent`,
@@ -86,7 +87,7 @@ module.exports = {
                 });
                 result = response.data;
             } catch (error) {
-                console.log(error);
+                log.error(error);
                 result = {
                     msg: "Out of time doing this command, maybe this command is not recognized or too heavy.",
                     code: 302
@@ -94,7 +95,7 @@ module.exports = {
             }
 
             // LOG RESPON
-            console.log(result);
+            log.info(result);
 
             if (result.msg == 'succ' && result.retcode == 0) {
                 return {
@@ -117,7 +118,7 @@ module.exports = {
 
             }
         } catch (error) {
-            console.log(error);
+            log.error(error);
             return {
                 msg: "Error get server",
                 code: 401
@@ -142,7 +143,7 @@ module.exports = {
                 msg: "OK"
             };
         } catch (error) {
-            //console.log("Error: "+server_url);
+            log.error("Error: "+server_url);
             return {
                 msg: "Error get server",
                 code: 401

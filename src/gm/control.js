@@ -1,3 +1,5 @@
+const log = require('../util/logger');
+
 const api_gio = require('./gio');
 const api_gc = require('./gc');
 
@@ -37,7 +39,7 @@ module.exports = {
     GM: async function (server_id, uid, cmd, code) {
         try {
 
-            console.log(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`);
+            log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`);
 
             if (mylib.contains(cmd, ['item add all'])) {
                 return {
@@ -84,7 +86,7 @@ module.exports = {
             }
 
         } catch (error) {
-            console.log(` > Error GM`);
+            log.error(` > Error GM`,error);
             return {
                 msg: "Error Get",
                 code: 302
@@ -107,8 +109,6 @@ module.exports = {
             var tmp = {};
             var d = obj[key];
 
-            //console.log(d);
-
             var o = {
                 online: false,
                 player: 0,
@@ -124,7 +124,6 @@ module.exports = {
                 if (d.api.type == 1) {
 
                     var ts = await api_gio.Server(d.api.url);
-                    //console.log(ts);
                     if (ts.code == 200) {
                         // TODO: get stats ram cpu via shell
                         o['online'] = true;
@@ -135,7 +134,6 @@ module.exports = {
                 } else if (d.api.type == 2) {
 
                     var ts = await api_gc.Server(d.api.url);
-                    //console.log(ts);
                     if (ts.code == 0) {
                         o['online'] = true;
                         o['player'] = ts.data.playerCount;
@@ -149,13 +147,13 @@ module.exports = {
 
                 }
             } catch (error) {
-                console.log(error);
+                log.error(error);
             }
 
             tmp['name'] = d.title;
             tmp['id'] = key;
             tmp['server'] = o;
-            //console.log(d);
+            
             return tmp;
         }));
 
