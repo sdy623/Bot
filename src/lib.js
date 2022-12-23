@@ -1,16 +1,25 @@
 module.exports = {
     sleep: function (ms) {
         return new Promise((resolve) => {
-            setTimeout(resolve, 1000*ms);
+            setTimeout(resolve, 1000 * ms);
         });
     },
     isEmpty: function (str) {
-        return (!str || str.length === 0 );
+        return (!str || str.length === 0);
     },
-    contains: function(target, pattern){
+    contains: function (target, pattern) {
         var value = 0;
-        pattern.forEach(function(word){
-          value = value + target.includes(word);
+        pattern.forEach(function (word) {
+            value = value + target.includes(word);
+        });
+        return (value === 1)
+    },
+    contains2: function (target, pattern) {
+        var value = 0;
+        pattern.forEach(function (word) {
+            if (target == word) {
+                value = 1;
+            }
         });
         return (value === 1)
     }

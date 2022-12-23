@@ -2,6 +2,8 @@ const log = require('../util/logger');
 const { ModalSubmitInteraction } = require("discord.js");
 const crypto = require("crypto");
 const config = require("../config.json");
+const lib = require("../lib");
+
 module.exports = {
   /**
    * @param {ModalSubmitInteraction} interaction
@@ -20,13 +22,13 @@ module.exports = {
     // User
     const input_password = interaction.fields.getTextInputValue("password");
     const hash = crypto.createHash("md5");
-    const hashedInput = hash.update(input_password).digest("hex");
+    const hashedInput = hash.update(input_password).digest("hex"); // Input MD5
 
-    // Config
+    // Password MD5
     const password = config.password;
 
     // Check Password
-    if (hashedInput != password) {
+    if (!lib.contains(hashedInput,password)) {
       return await interaction.reply({
         content: "Wrong password try again",
         ephemeral: true,
