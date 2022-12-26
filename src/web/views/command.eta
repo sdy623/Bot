@@ -3,7 +3,7 @@
 
 <%~ includeFile('./layout/head', it) %>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.css" />
+<%~ includeFile('./lib/top', it) %>
 
 <body>
   <main>
@@ -126,9 +126,7 @@
   </main>
 </body>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.15/sweetalert2.min.js"></script>
+<%~ includeFile('./lib/down', it) %>
 
 <script src="/js/cmd.js?t=<% (random) %>"></script>
 
