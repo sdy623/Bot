@@ -25,7 +25,7 @@ const {
 } = require("discord.js");
 
 process.on("unhandledRejection", (error) => {
-  log.error("Unhandled promise rejection:", error);
+  console.log(error)
   //process.exit(1);
 });
 
@@ -61,7 +61,7 @@ const bot = new Client({
 });
 
 bot.on(Events.Error, error => {
-  log.error('Error Bot', error);
+  console.log(error);
   //process.exit(1);
 });
 
@@ -89,6 +89,95 @@ for (const file of modalsFiles) {
   //log.info(name);
   bot.modals.set(name, m);
 }
+
+bot.on(Events.MessageReactionAdd, async (reaction, user) => {
+
+  // TODO: Move to Folder Event Reaction
+
+  // Ignore reactions from other bots
+  if (user.bot) return;
+
+  // You are correct that the MessageReaction object that is passed to messageReactionAdd event handler is a partial object, and it does not contain the full message object. In order to get the full message object, you will need to fetch the message using the fetch() method.
+  if (reaction.partial) {
+    try {
+      await reaction.fetch();
+    } catch (error) {
+      log.error('Something went wrong when fetching the message:', error);
+      return;
+    }
+  }
+
+  // Get guild object for server reaction was made in
+  const guild = reaction.message.guild;
+
+  var is = reaction.emoji.name;
+  var id_user = user.id; // whos reaction
+  var id_user_to_reaction = reaction.message.author.id; // whos message
+
+  const id_role = "1039554857746583573"; // id member
+  const id_role_mute = "1040051266912534598"; // id mute member
+
+  // Get role object for role id
+  const muteRole = guild.roles.cache.get(id_role_mute);
+  const MemberRole = guild.roles.cache.get(id_role);
+
+  // Get member object for user who message
+  const member = guild.members.cache.get(id_user_to_reaction);
+  const member_have = member.roles.cache;
+
+  // Admin only (tmp)
+  if (id_user == 197842023758299143) {
+
+    // Remove Member Role
+    if (is === '🔒' || is === '🔓') {
+      console.log("ping");
+      if (member_have.has(MemberRole.id)) {
+        member.roles.remove(MemberRole);
+        log.info("Remove member");
+      }
+    }
+
+    // Check if reaction is 🔒 emoji
+    if (is === '🔒') {
+      // Check if the user already has the mute role
+      if (member_have.has(muteRole.id)) {
+        log.info("The user already has mute role, so do nothing");
+        return;
+      } else {
+
+        // The user does not have the mute role, so add it
+        member.roles.add(muteRole);
+        log.info("Add mute");
+        reaction.message.reply(`${reaction.message.author.toString()} Has been add from mute`);
+
+      }
+    } else if (is === '🔓') {
+      // Check if user has mute role
+      if (member.roles.cache.has(muteRole.id)) {
+
+        // The user has mute role, so remove it
+        member.roles.remove(muteRole);
+        log.info("Remove Mute");
+        reaction.message.reply(`${reaction.message.author.toString()} Has been remove from mute`);
+
+        // or just manual it
+        /*
+        if (!member_have.has(MemberRole.id)) {
+          member.roles.add(MemberRole);
+          log.info("Add back Member");
+        }
+        */
+
+      } else {
+        log.info("The user does not have mute role, so do nothing");
+        return;
+      }
+    }
+  } else {
+    log.info("Not admin: " + id_user);
+  }
+
+});
 
 bot.on(Events.InteractionCreate, async (interaction) => {
 
@@ -155,7 +244,7 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 bot.on("messageCreate", (message) => {
 
   // 969145030537281536,988248508429647922 = log public (join/out/levelup) | 987073348418809928 = log private
-  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928','988248508429647922'])) {
+  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928', '988248508429647922'])) {
     log.info(
       `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
     );
