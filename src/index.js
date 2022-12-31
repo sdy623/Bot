@@ -79,6 +79,7 @@ for (const file of commandFiles) {
   const command = require(filePath);
   bot.commands.set(command.data.name, command);
 }
+
 // Modal
 bot.modals = new Collection();
 const modalsPath = path.join(__dirname, "modals");
@@ -119,26 +120,30 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
   var id_user_to_reaction = reaction.message.author.id; // whos message
   var msg = reaction.message.content;
 
-  const id_role = "1039554857746583573"; // id member
+  const id_role_member = "1039554857746583573"; // id member
   const id_role_mute = "1040051266912534598"; // id mute member
 
   // Get role object for role id
   const muteRole = guild.roles.cache.get(id_role_mute);
-  const MemberRole = guild.roles.cache.get(id_role);
+  const MemberRole = guild.roles.cache.get(id_role_member);
 
-  // Get member object for user who message
+  // Get user get reaction
   const member = guild.members.cache.get(id_user_to_reaction);
   const member_have = member.roles.cache;
 
+  // Get whos reaction
+  const users = guild.members.cache.get(id_user);
+  const users_have = users.roles.cache;
+
   log.info(`LOG Reaction: ${name_user} ${is} -> ${msg}`);
 
-  // Admin only (tmp)
-  if (id_user == 197842023758299143) {
+  // Mod Only
+  if (users_have.some(role => config.id_mod.includes(role.id))) {
 
     // Remove Member Role
     if (is === '🔒' || is === '🔓') {
       console.log("ping");
-      if (member_have.has(MemberRole.id)) {
+      if (member_have.has(id_role_member)) {
         member.roles.remove(MemberRole);
         log.info("Remove member");
       }
@@ -155,7 +160,7 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
         // The user does not have the mute role, so add it
         member.roles.add(muteRole);
         log.info("Add mute");
-        reaction.message.reply(`${reaction.message.author.toString()} Has been add from mute`);
+        reaction.message.reply(`${reaction.message.author.toString()} has been added to muted role`);
 
       }
     } else if (is === '🔓') {
@@ -165,7 +170,7 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
         // The user has mute role, so remove it
         member.roles.remove(muteRole);
         log.info("Remove Mute");
-        reaction.message.reply(`${reaction.message.author.toString()} Has been remove from mute`);
+        reaction.message.reply(`${reaction.message.author.toString()} has been remove to muted role`);
 
         // or just manual it
         /*
@@ -180,8 +185,6 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
         return;
       }
     }
-
-  } else {
 
   }
 
@@ -423,9 +426,18 @@ if (config.startup.webserver) {
 
 const ping_notif = new WebhookClient(config.webhook.stats);
 const ping_job = new Worker("./src/job/ping.js");
-ping_job.on("message", (data) => {
-  ping_notif.send(data);
-  log.info(`Send Ping: ${data.content}`);
+ping_job.on("message", (d) => {
+  if (d.type == "msg") {
+    ping_notif.send(d.data);
+    log.info(`Send Ping: ${d.data.content}`);
+  } else if (d.type == "bot_stats") {
+    bot.user.setPresence({
+      activities: [{
+        name: d.data
+      }],
+      status: 'online'
+    });
+  }
 });
 ping_job.on("error", (msg) => {
   console.log(msg);

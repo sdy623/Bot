@@ -14,23 +14,36 @@ function send(raw, id) {
     var found = last_msg.findIndex(el => el.id === id);
     var toadd = false;
     var tosend = false;
+    var msgadd = "";
+    var nowtime = new Date();
+    var msg_now = raw.content;
+
     if (found !== -1) {
         var old_msg = last_msg[found];
         if (old_msg) {
-            if (old_msg.msg == raw.content) {
-                //console.log("dup");
+            if (old_msg.msg == msg_now) {
                 return;
             }
-            console.log("tesss " + old_msg.msg + " == " + raw.content + " ");
-
+            log.info("Update: " + old_msg.msg + " == " + msg_now + " ");
             last_msg[found] = raw; // update
-
             tosend = true;
         } else {
             toadd = true;
-            console.log("nani");
+            log.info("nani");
         }
-        //last_msg[found]
+
+        const diffMilliseconds = nowtime.getTime() - old_msg.date.getTime();
+        const diffMinutes = Math.floor(diffMilliseconds / 60000);
+        const diffSeconds = Math.floor(diffMilliseconds / 1000) % 60;
+
+        if (diffMinutes > 0) {
+            msgadd = ` (${diffMinutes} minutes ${diffSeconds} seconds from previous message)`;
+        } else {
+            msgadd = ` (${diffSeconds} seconds from previous message)`;
+        }
+
+        msg_now = msg_now + msgadd;
+
     } else {
         toadd = true;
         tosend = true;
@@ -38,21 +51,29 @@ function send(raw, id) {
     if (toadd) {
         last_msg.push({
             id: id,
-            msg: raw.content
+            msg: msg_now,
+            date: nowtime
         })
     }
     if (tosend) {
-        parentPort.postMessage(raw);
+        parentPort.postMessage({
+            type: "msg",
+            data: raw
+        });
     }
 }
 
 setIntervalAsync(async () => {
     let d = await api_control.Server();
+    var total_online = 0;
     d.data.forEach(async function (i) {
 
-        //console.log(i);
+        //log.info(i);
         var id_server = i.id;
         var server_name = i.name;
+        var player_online = i.server.player;
+
+        total_online = total_online + player_online;
 
         var found = tmp_cek.findIndex(el => el.id === id_server);
         if (found !== -1) {
@@ -61,7 +82,6 @@ setIntervalAsync(async () => {
 
             var ram_usg_raw = i.server.ram;
             var cpi_usg_raw = i.server.cpu;
-            var player_online = i.server.player;
             var is_online = i.server.online;
             var mnt_name = i.server.monitor;
 
@@ -97,28 +117,28 @@ setIntervalAsync(async () => {
             var get_ram = ram_usg_raw.match(regex);
             if (get_ram) {
                 const new_ram = parseFloat(get_ram[1]);
-                if (new_ram >= 95) {
+                if (new_ram >= 98) {
                     //`Server ${i.name} reaches memory limit ${ram_usg_raw}, time to restart.`
                     // ${ram_usg_raw}
-                    let d = await api_control.SH(`docker restart ${mnt_name}`,id_server); // TODO: add type monitor
-                    console.log(d);
+                    let d = await api_control.SH(`docker restart ${mnt_name}`, id_server); // TODO: add type monitor
+                    log.info(d);
                     send({
                         "content": `Server reaches memory limit, server was successfully restarted`,
                         "embeds": stats
                     }, id_server);
                 } else {
-                    //console.log(`${old.server.ram} vs ${ram_usg_raw}`);
+                    //log.info(`${old.server.ram} vs ${ram_usg_raw}`);
                 }
             }
 
             if (is_online !== old.server.online) {
                 if (is_online) {
                     send({
-                        "content": `Server ${server_name} currently back.`,
+                        "content": `Server ${server_name} back online`,
                     }, id_server);
                 } else {
                     send({
-                        "content": `Server ${server_name} online down.`,
+                        "content": `Server ${server_name} down.`,
                     }, id_server);
                 }
             }
@@ -127,12 +147,19 @@ setIntervalAsync(async () => {
 
             //var tes = "";
             //tes += `${i.name} (${i.id}) > Player ${i.server.player} | CPU: ${i.server.cpu} | RAM ${i.server.ram} \n`
-            //parentPort.postMessage(tes);
+            //parentPort.postMessage(tes);            
 
         } else {
-            console.log("skip");
+            log.info("skip");
             tmp_cek.push(i);
         }
 
     });
+    
+    // send stats online
+    parentPort.postMessage({
+        type: "bot_stats",
+        data: `Currently ${total_online} people playing.`
+    });
+
 }, 1000 * 10);

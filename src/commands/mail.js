@@ -9,7 +9,7 @@ const config = require("../config.json");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("mail")
-        .setDescription("Send email to GIO Server")
+        .setDescription("Send mail to GIO Server")
         .addStringOption(option =>
             option.setName('uid')
                 .setDescription('uid player')
@@ -55,9 +55,10 @@ module.exports = {
             } else {
                 return await interaction.reply({ content: `Error msg: ${input.msg}, code: ${input.code}`, ephemeral: true });
             }
+
         } catch (err) {
             log.error("Error: ", err);
-            return await interaction.reply({ content: "error2", ephemeral: true });
+            return await interaction.editReply({ content: "error2", ephemeral: true });
         }
     },
 };
