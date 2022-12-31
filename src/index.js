@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const eta = require("eta");
+const { Worker } = require("worker_threads");
 
 const log = require('./util/logger');
 
@@ -22,6 +23,8 @@ const {
   GatewayIntentBits,
   Partials,
   Events,
+  WebhookClient,
+  EmbedBuilder
 } = require("discord.js");
 
 process.on("unhandledRejection", (error) => {
@@ -112,7 +115,9 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 
   var is = reaction.emoji.name;
   var id_user = user.id; // whos reaction
+  var name_user = user.username;
   var id_user_to_reaction = reaction.message.author.id; // whos message
+  var msg = reaction.message.content;
 
   const id_role = "1039554857746583573"; // id member
   const id_role_mute = "1040051266912534598"; // id mute member
@@ -124,6 +129,8 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
   // Get member object for user who message
   const member = guild.members.cache.get(id_user_to_reaction);
   const member_have = member.roles.cache;
+
+  log.info(`LOG Reaction: ${name_user} ${is} -> ${msg}`);
 
   // Admin only (tmp)
   if (id_user == 197842023758299143) {
@@ -173,8 +180,9 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
         return;
       }
     }
+
   } else {
-    log.info("Not admin: " + id_user);
+
   }
 
 });
@@ -412,3 +420,13 @@ if (config.startup.webserver) {
 } else {
   log.info("skip run webserver...");
 }
+
+const ping_notif = new WebhookClient(config.webhook.stats);
+const ping_job = new Worker("./src/job/ping.js");
+ping_job.on("message", (data) => {
+  ping_notif.send(data);
+  log.info(`Send Ping: ${data.content}`);
+});
+ping_job.on("error", (msg) => {
+  console.log(msg);
+});

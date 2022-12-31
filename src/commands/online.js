@@ -13,7 +13,7 @@ module.exports = {
      * @param {CommandInteraction} interaction
      * @returns {void}
      */
-    async execute(interaction) {        
+    async execute(interaction) {
         try {
 
             interaction.reply({ content: "Please wait...", ephemeral: true });
@@ -22,8 +22,8 @@ module.exports = {
             var tes = "";
             var total = 0;
             let d = await api_control.Server();
-            d.data.forEach(function(i){ 
-                tes += `${i.name} (${i.id}) > Player ${i.server.player}\n`
+            d.data.forEach(function (i) {
+                tes += `${i.name} (${i.id}) > Player ${i.server.player} | CPU: ${i.server.cpu} / RAM ${i.server.ram} \n`
                 total = total + i.server.player;
             });
 
@@ -31,8 +31,8 @@ module.exports = {
             return await interaction.editReply({ content: `${tes}`, ephemeral: true });
 
         } catch (err) {
-            log.error("Error: ",err);
-            await interaction.reply("Unknown problem");
+            log.error("Error: ", err);
+            await interaction.editReply({ content: "Unknown problem", ephemeral: true });
         }
     },
 };

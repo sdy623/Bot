@@ -49,4 +49,4 @@ async function online() {
 online();
 setInterval(function () {
     online();
-}, 60 * 1000);
+}, 10 * 1000);

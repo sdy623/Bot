@@ -143,7 +143,7 @@ module.exports = {
                 msg: "OK"
             };
         } catch (error) {
-            log.error("Error: "+server_url);
+            //log.error("Error: "+server_url);
             return {
                 msg: "Error get server",
                 code: 401

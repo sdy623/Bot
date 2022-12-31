@@ -8,6 +8,8 @@ const config = require("../config.json");
 
 const axios = require('axios');
 
+const { NodeSSH } = require('node-ssh');
+
 // TODO: better use datebase
 let key = [];
 // Thank you ChatGPT
@@ -86,7 +88,7 @@ module.exports = {
             }
 
         } catch (error) {
-            log.error(` > Error GM`,error);
+            log.error(` > Error GM`, error);
             return {
                 msg: "Error Get",
                 code: 302
@@ -115,10 +117,13 @@ module.exports = {
                 game: d.game,
                 version: d.version,
                 public: d.public,
+                monitor:d.monitor.name,// TODO: get better?
                 cpu: "???",
                 ram: "???",
                 commit: "???"
             };
+
+            var server_live = false;
 
             try {
                 if (d.api.type == 1) {
@@ -129,6 +134,7 @@ module.exports = {
                         o['online'] = true;
                         o['player'] = ts.data.online;
                         o['sub'] = ts.data.server;
+                        server_live = true;
                     }
 
                 } else if (d.api.type == 2) {
@@ -138,14 +144,31 @@ module.exports = {
                         o['online'] = true;
                         o['player'] = ts.data.playerCount;
                         if (ts.data.MemoryCurrently) {
-                            o['ram'] = ts.data.MemoryCurrently + " MB (" + ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) + " %)";
+                            //o['ram'] = ts.data.MemoryCurrently + " MB (" + ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) + " %)";
                         }
                         if (ts.data.DockerGS) {
                             o['commit'] = ts.data.DockerGS;
                         }
+                        server_live = true;
                     }
 
                 }
+
+                if (server_live) {
+
+                    // TODO: add type monitor
+                    let stats = await this.SH(`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`, key);
+                    if (stats.code == 200) {
+                        const objstats = JSON.parse(stats.msg);
+                        var pre_ram = objstats['MemPerc'];
+                        o['cpu'] = objstats['CPUPerc'];
+                        o['ram'] = objstats['MemUsage'] + " (" + pre_ram + ")";
+                    } else {
+                        log.error(stats);
+                    }
+
+                }
+
             } catch (error) {
                 log.error(error);
             }
@@ -153,7 +176,7 @@ module.exports = {
             tmp['name'] = d.title;
             tmp['id'] = key;
             tmp['server'] = o;
-            
+
             return tmp;
         }));
 
@@ -162,13 +185,59 @@ module.exports = {
             data: r,
             msg: "OK but update",
             code: 200,
-            cache: Date.now() + (1 * 60 * 1000) // 1 minutes
+            cache: Date.now() + (10 * 1000) // 10 sec
         };
         if (server_id) {
             return cache_serverlist.data.find((j) => j.id == server_id);
         }
 
         return cache_serverlist;
+    },
+    SH: async function (raw, server_id) {
+
+        // check server
+        var configis = this.Config(server_id);
+        if (configis.code != 200) {
+            return {
+                msg: configis.msg,
+                code: configis.code
+            };
+        }
+
+        var dt = configis.data;
+
+        const password = dt.ssh.password;
+        const ssh = new NodeSSH();
+
+        return ssh.connect({
+            host: dt.ip,
+            username: dt.ssh.username,
+            port: dt.ssh.port,
+            password,
+            tryKeyboard: true,
+        })
+            .then(async function () {
+                return ssh.execCommand(raw, { cwd: '.' }).then(function (result) {
+                    if (result.stderr) {
+                        return {
+                            msg: result.stdout,
+                            code: 404
+                        };
+                    } else {
+                        return {
+                            msg: result.stdout,
+                            code: 200
+                        };
+                    }
+                })
+            })
+            .catch(async function (r) {
+                log.error(r);
+                return {
+                    msg: "ERROR SH",
+                    code: 301
+                };
+            })
     },
     Verified: function (tes) {
         /*
