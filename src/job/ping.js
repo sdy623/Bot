@@ -44,8 +44,9 @@ function send(raw, id) {
             // Update raw data
             raw.content = msg_now;
 
-            // Update msg
+            // Update msg & time
             last_msg[found].msg = msg_now;
+            last_msg[found].date = nowtime;
 
             tosend = true;
         } else {
