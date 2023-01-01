@@ -11,38 +11,47 @@ const { parentPort } = require("worker_threads");
 var tmp_cek = [];
 var last_msg = [];
 function send(raw, id) {
+
     var found = last_msg.findIndex(el => el.id === id);
     var toadd = false;
     var tosend = false;
-    var msgadd = "";
     var nowtime = new Date();
     var msg_now = raw.content;
 
     if (found !== -1) {
+
         var old_msg = last_msg[found];
         if (old_msg) {
+
             if (old_msg.msg == msg_now) {
                 return;
             }
-            log.info("Update: " + old_msg.msg + " == " + msg_now + " ");
-            last_msg[found] = raw; // update
+
+            var msgadd = "";
+
+            const diffMilliseconds = nowtime.getTime() - old_msg.date.getTime();
+            const diffMinutes = Math.floor(diffMilliseconds / 60000);
+            const diffSeconds = Math.floor(diffMilliseconds / 1000) % 60;
+
+            var old_time = parseInt(old_msg.date.getTime() / 1000);
+
+            msgadd = `${msg_now} (<t:${old_time}:R> from previous message | ${diffSeconds} seconds)`;
+
+            msg_now = msgadd;
+
+            log.info("Update: " + old_msg.msg + " == " + msgadd + " ");
+
+            // Update raw data
+            raw.content = msg_now;
+
+            // Update msg
+            last_msg[found].msg = msg_now;
+
             tosend = true;
         } else {
             toadd = true;
             log.info("nani");
         }
-
-        const diffMilliseconds = nowtime.getTime() - old_msg.date.getTime();
-        const diffMinutes = Math.floor(diffMilliseconds / 60000);
-        const diffSeconds = Math.floor(diffMilliseconds / 1000) % 60;
-
-        if (diffMinutes > 0) {
-            msgadd = ` (${diffMinutes} minutes ${diffSeconds} seconds from previous message)`;
-        } else {
-            msgadd = ` (${diffSeconds} seconds from previous message)`;
-        }
-
-        msg_now = msg_now + msgadd;
 
     } else {
         toadd = true;
@@ -155,7 +164,7 @@ setIntervalAsync(async () => {
         }
 
     });
-    
+
     // send stats online
     parentPort.postMessage({
         type: "bot_stats",
