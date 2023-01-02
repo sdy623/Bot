@@ -27,7 +27,7 @@ module.exports = {
         }
         return this.Sign(params);
     },
-    Mail: async function (url,uid = "10005", title = "Tes", sender = 'YuukiPS', expire_time = null, content = 'tes', item_list = null, is_collectible = false) {
+    Mail: async function (url, uid = "10005", title = "Tes", sender = 'YuukiPS', expire_time = null, content = 'tes', item_list = null, is_collectible = false) {
         if (!expire_time) {
             const now = new Date();
             expire_time = Math.round(now.getTime() / 1000) + 60 ** 2 * 24 * 7;
@@ -73,7 +73,7 @@ module.exports = {
             };
         }
     },
-    GM: async function (url,uid, set_command, set_timeout = 10) {
+    GM: async function (url, uid, set_command, set_timeout = 30) {
         try {
 
             // 1116 = GM
@@ -87,9 +87,9 @@ module.exports = {
                 });
                 result = response.data;
             } catch (error) {
-                log.error(error);
-                result = {
-                    msg: "Out of time doing this command, maybe this command is not recognized or too heavy.",
+                log.error(`GIO ${uid} | ${url} -> ${error.message} -> ${set_command}`);
+                return {
+                    msg: `Out of time doing this command, maybe this command is not recognized or too heavy.`,
                     code: 302
                 };
             }
@@ -117,8 +117,8 @@ module.exports = {
                 }
 
             }
-        } catch (error) {
-            log.error(error);
+        } catch (x) {
+            log.error(x);
             return {
                 msg: "Error get server",
                 code: 401

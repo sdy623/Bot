@@ -6,7 +6,7 @@ async function setup() {
 
         // list server
         const r = await axios.get('/api/server', {
-            timeout: 1000 * 5
+            timeout: 1000 * 30
         });
         if (r.data) {
             var s = r.data;
@@ -24,7 +24,7 @@ async function setup() {
 
         // list monster
         const r_monster = await axios.get(API_JSON_DATA + 'monsterList.json', {
-            timeout: 1000 * 5
+            timeout: 1000 * 15
         });
         var data_monster = r_monster.data;
         if (data_monster) {
@@ -39,6 +39,10 @@ async function setup() {
         }
 
     } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: "Error get server, try reload...",
+        });
         console.error(error);
     }
 }
@@ -89,7 +93,7 @@ cmd_raw.addEventListener("submit", async function (e) {
 
         const rr = await axios.get('/api/server/' + data_login.server.name + "/command", {
             params: tmp,
-            timeout: 1000 * 15
+            timeout: 1000 * 60
         });
         console.log(rr);
 

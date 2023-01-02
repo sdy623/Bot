@@ -7,6 +7,8 @@ const lib = require("../lib");
 
 const { parentPort } = require("worker_threads");
 
+const regex_ram = /\((\d+\.\d+)%\)/;
+
 // check server every 10 seconds
 var tmp_cek = [];
 var last_msg = [];
@@ -35,7 +37,7 @@ function send(raw, id) {
 
             var old_time = parseInt(old_msg.date.getTime() / 1000);
 
-            msgadd = `${msg_now} (<t:${old_time}:R> from previous message | ${diffSeconds} seconds)`;
+            msgadd = `${msg_now} (${diffMinutes > 0 ? diffMinutes + ' minutes ' : ''}${diffSeconds} seconds from previous message)`;
 
             msg_now = msgadd;
 
@@ -93,7 +95,6 @@ setIntervalAsync(async () => {
             var ram_usg_raw = i.server.ram;
             var cpi_usg_raw = i.server.cpu;
             var is_online = i.server.online;
-            var mnt_name = i.server.monitor;
 
             var stats = [
                 {
@@ -121,26 +122,72 @@ setIntervalAsync(async () => {
                 }
             ];
 
-            // cek
-            //const old_ram = parseFloat(old.server.player.match(regex));
-            const regex = /\((\d+\.\d+)%\)/;
-            var get_ram = ram_usg_raw.match(regex);
-            if (get_ram) {
-                const new_ram = parseFloat(get_ram[1]);
-                if (new_ram >= 98) {
-                    //`Server ${i.name} reaches memory limit ${ram_usg_raw}, time to restart.`
-                    // ${ram_usg_raw}
-                    let d = await api_control.SH(`docker restart ${mnt_name}`, id_server); // TODO: add type monitor
-                    log.info(d);
-                    send({
-                        "content": `Server reaches memory limit, server was successfully restarted`,
-                        "embeds": stats
-                    }, id_server);
+            // Check Only Online
+            if (is_online) {
+
+                // Monitor
+                var mnt = i.server.monitor;
+                if (mnt) {
+                    // check config max
+                    var mnt_max = mnt.max;
+                    var mnt_type = mnt.type;
+                    var mnt_name = mnt.name;
+                    var mnt_service = mnt.service;
+                    if (mnt_max) {
+
+                        // Check RAM
+                        if (mnt_max.ram >= 1) {
+                            var get_ram = ram_usg_raw.match(regex_ram);
+                            if (get_ram) {
+                                const new_ram = parseFloat(get_ram[1]);
+                                if (new_ram >= mnt_max.ram) {
+
+                                    if (mnt_max.autorestart == true) {
+
+                                        if (mnt_type == 1) {
+                                            // Restart Container
+                                            let d = await api_control.SH(`docker restart ${mnt_name}`, id_server);
+                                            log.info(d);
+                                        } else if (mnt_type == 2) {
+                                            // Restart Process in Container
+                                            let d = await api_control.SH(`docker container exec ${mnt_name} pkill -9 ${mnt_service}`, id_server);
+                                            log.info(d);
+                                        } else {
+                                            log.error("unknown restart");
+                                        }
+
+                                        send({
+                                            "content": `Server reaches memory limit, server was successfully restarted`,
+                                            "embeds": stats
+                                        }, id_server);
+                                    } else {
+                                        send({
+                                            "content": `Server reaches memory limit, need manual restart.`,
+                                            "embeds": stats
+                                        }, id_server);
+                                    }
+
+                                } else {
+                                    log.info(`Monitor ${id_server}: ${ram_usg_raw} | LIMIT RAM ${mnt_max.ram} , CPU ${mnt_max.cpu}`); 
+                                    // ${old.server.ram} vs 
+                                }
+                            } else {
+                                log.info(`SKIP 3: ${ram_usg_raw} `);
+                            }
+                        } else {
+                            log.info(`SKIP 4`);
+                        }
+
+                    } else {
+                        log.info(`SKIP 1`);
+                    }
+
                 } else {
-                    //log.info(`${old.server.ram} vs ${ram_usg_raw}`);
+                    log.info(`SKIP 2`);
                 }
             }
 
+            //Check previous comparisons online
             if (is_online !== old.server.online) {
                 if (is_online) {
                     send({
@@ -154,13 +201,8 @@ setIntervalAsync(async () => {
             }
 
             tmp_cek[found] = i;
-
-            //var tes = "";
-            //tes += `${i.name} (${i.id}) > Player ${i.server.player} | CPU: ${i.server.cpu} | RAM ${i.server.ram} \n`
-            //parentPort.postMessage(tes);            
-
         } else {
-            log.info("skip");
+            log.info("SKIP");
             tmp_cek.push(i);
         }
 

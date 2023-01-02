@@ -43,9 +43,9 @@ module.exports = {
 
             log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`);
 
-            if (mylib.contains(cmd, ['item add all'])) {
+            if (mylib.contains(cmd, ['item add all','clear all','quest clear all'])) {
                 return {
-                    msg: "This command has been temporarily blocked",
+                    msg: "This command is temporarily blocked by admin",
                     code: 403
                 }
             }
@@ -82,7 +82,7 @@ module.exports = {
                 return await api_gc.GM(configis.data.api.url, uid, cmd, code);
             } else {
                 return {
-                    msg: "No Found config server",
+                    msg: "No Found config server1",
                     code: 404
                 }
             }
@@ -117,7 +117,7 @@ module.exports = {
                 game: d.game,
                 version: d.version,
                 public: d.public,
-                monitor:d.monitor.name,// TODO: get better?
+                monitor:d.monitor, // This should be private data?
                 cpu: "???",
                 ram: "???",
                 commit: "???"

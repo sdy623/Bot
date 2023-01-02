@@ -5,7 +5,7 @@ const log = require('../util/logger');
 const axios = require('axios');
 
 module.exports = {
-    GM: async function (url, uid, cmd, code) {
+    GM: async function (url, uid, cmd, code, set_timeout = 15) {
         try {
             const response = await axios.get(url + "api/command", {
                 params: {
@@ -13,7 +13,7 @@ module.exports = {
                     cmd: cmd,
                     player: uid
                 },
-                timeout: 5000
+                timeout: 1000 * set_timeout
             });
             const d = response.data;
             return {
@@ -22,9 +22,9 @@ module.exports = {
                 data: d.data
             }
         } catch (error) {
-            log.error(error);
+            log.error(`GC ${uid} | ${url} -> ${error.message} -> ${cmd}`);
             return {
-                msg: "Error Get",
+                msg: `Out of time doing this command, maybe this command is not recognized or too heavy.`,
                 code: 302
             };
         }
