@@ -43,7 +43,7 @@ module.exports = {
 
             log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`);
 
-            if (mylib.contains(cmd, ['item add all','clear all','quest clear all'])) {
+            if (mylib.contains(cmd, ['item add all', 'clear all', 'quest clear all'])) {
                 return {
                     msg: "This command is temporarily blocked by admin",
                     code: 403
@@ -117,7 +117,7 @@ module.exports = {
                 game: d.game,
                 version: d.version,
                 public: d.public,
-                monitor:d.monitor, // This should be private data?
+                monitor: d.monitor, // This should be private data?
                 cpu: "???",
                 ram: "???",
                 commit: "???"
@@ -229,12 +229,18 @@ module.exports = {
                             code: 200
                         };
                     }
+                }).catch(async function (r) {
+                    //log.error("tes: ",r);
+                    return {
+                        msg: "ERROR SH1",
+                        code: 301
+                    };
                 })
             })
             .catch(async function (r) {
-                log.error(r);
+                //log.error("tes: ",r);
                 return {
-                    msg: "ERROR SH",
+                    msg: "ERROR SH2",
                     code: 301
                 };
             })

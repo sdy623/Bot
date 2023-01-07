@@ -28,7 +28,7 @@ const {
 } = require("discord.js");
 
 process.on("unhandledRejection", (error) => {
-  console.log(error)
+  console.log(error);
   //process.exit(1);
 });
 
@@ -142,7 +142,6 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     // Remove Member Role
     if (is === '🔒' || is === '🔓') {
-      console.log("ping");
       if (member_have.has(id_role_member)) {
         member.roles.remove(MemberRole);
         log.info("Remove member");
@@ -425,20 +424,44 @@ if (config.startup.webserver) {
 }
 
 const ping_notif = new WebhookClient(config.webhook.stats);
-const ping_job = new Worker("./src/job/ping.js");
+let ping_job = get_job();
 ping_job.on("message", (d) => {
-  if (d.type == "msg") {
-    ping_notif.send(d.data);
-    log.info(`Send Ping: ${d.data.content}`);
-  } else if (d.type == "bot_stats") {
-    bot.user.setPresence({
-      activities: [{
-        name: d.data
-      }],
-      status: 'online'
-    });
+  try {
+    if (d.type == "msg") {
+      ping_notif.send(d.data);
+      log.info(`Send Ping: ${d.data.content}`);
+    } else if (d.type == "bot_stats") {
+      bot.user.setPresence({
+        activities: [{
+          name: d.data
+        }],
+        status: 'online'
+      });
+    }
+  } catch (ex) {
+    log.error("Error Message Ping: ", ex);
+    // Stop the Worker and restart it
+    //ping_job.terminate();
+    //ping_job = get_job();
   }
+
 });
-ping_job.on("error", (msg) => {
-  console.log(msg);
+ping_job.on("error", (ex) => {
+  console.log("ping error");
+  console.log(ex);
+
+  // Stop the Worker and restart it
+  try {
+    ping_job.terminate();
+    setTimeout(function () {
+      ping_job = undefined;
+      ping_job = get_job();
+    }, 3000);
+  } catch (error) {
+    log.error("error restart....");
+  }
+
 });
+function get_job() {
+  return new Worker("./src/job/ping.js");
+}

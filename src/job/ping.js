@@ -9,7 +9,7 @@ const { parentPort } = require("worker_threads");
 
 const regex_ram = /\((\d+\.\d+)%\)/;
 
-// check server every 10 seconds
+// send msg
 var tmp_cek = [];
 var last_msg = [];
 function send(raw, id) {
@@ -75,6 +75,22 @@ function send(raw, id) {
     }
 }
 
+// type restart
+async function restart(mnt_type, mnt_name, id_server, mnt_service) {
+    if (mnt_type == 1) {
+        // Restart Container
+        let d = await api_control.SH(`docker restart ${mnt_name}`, id_server);
+        log.info("restart1: ", d);
+    } else if (mnt_type == 2) {
+        // Restart Process in Container
+        let d = await api_control.SH(`docker container exec ${mnt_name} pkill -9 ${mnt_service}`, id_server);
+        log.info("restart2: ", d);
+    } else {
+        log.error("unknown restart: " + mnt_type);
+    }
+}
+
+// check server every 10 seconds
 setIntervalAsync(async () => {
     let d = await api_control.Server();
     var total_online = 0;
@@ -93,7 +109,7 @@ setIntervalAsync(async () => {
             var old = tmp_cek[found];
 
             var ram_usg_raw = i.server.ram;
-            var cpi_usg_raw = i.server.cpu;
+            var cpu_usg_raw = i.server.cpu;
             var is_online = i.server.online;
 
             var stats = [
@@ -109,7 +125,7 @@ setIntervalAsync(async () => {
                         },
                         {
                             "name": `CPU`,
-                            "value": `${cpi_usg_raw}`
+                            "value": `${cpu_usg_raw}`
                         },
                         {
                             "name": `Player Online`,
@@ -142,40 +158,38 @@ setIntervalAsync(async () => {
                                 const new_ram = parseFloat(get_ram[1]);
                                 if (new_ram >= mnt_max.ram) {
 
-                                    if (mnt_max.autorestart == true) {
-
-                                        if (mnt_type == 1) {
-                                            // Restart Container
-                                            let d = await api_control.SH(`docker restart ${mnt_name}`, id_server);
-                                            log.info(d);
-                                        } else if (mnt_type == 2) {
-                                            // Restart Process in Container
-                                            let d = await api_control.SH(`docker container exec ${mnt_name} pkill -9 ${mnt_service}`, id_server);
-                                            log.info(d);
-                                        } else {
-                                            log.error("unknown restart");
-                                        }
-
-                                        send({
-                                            "content": `Server reaches memory limit, server was successfully restarted`,
-                                            "embeds": stats
-                                        }, id_server);
-                                    } else {
-                                        send({
-                                            "content": `Server reaches memory limit, need manual restart.`,
-                                            "embeds": stats
-                                        }, id_server);
-                                    }
+                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
+                                    send({
+                                        "content": `Server reaches memory limit, server was successfully restarted`,
+                                        "embeds": stats
+                                    }, id_server);
 
                                 } else {
-                                    log.info(`Monitor ${id_server}: ${ram_usg_raw} | LIMIT RAM ${mnt_max.ram} , CPU ${mnt_max.cpu}`); 
-                                    // ${old.server.ram} vs 
+                                    //log.info(`Monitor ${id_server}: ${new_ram} | LIMIT RAM ${mnt_max.ram}`);
                                 }
                             } else {
                                 log.info(`SKIP 3: ${ram_usg_raw} `);
                             }
                         } else {
-                            log.info(`SKIP 4`);
+                            log.info(`SKIP RAM...`);
+                        }
+
+                        // CPU
+                        if (mnt_max.cpu >= 1) {
+                            const new_cpu = parseFloat(cpu_usg_raw);
+                            if (new_cpu >= mnt_max.cpu) {
+
+                                await restart(mnt_type, mnt_name, id_server, mnt_service);
+                                send({
+                                    "content": `Server too busy, server was successfully restarted`,
+                                    "embeds": stats
+                                }, id_server);
+
+                            } else {
+                                //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu}`);
+                            }
+                        } else {
+                            log.info(`SKIP CPU...`);
                         }
 
                     } else {
