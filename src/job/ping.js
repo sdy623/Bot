@@ -102,8 +102,6 @@ setIntervalAsync(async () => {
         var found = tmp_cek.findIndex(el => el.id === id_server);
         if (found !== -1) {
 
-            var old = tmp_cek[found];
-
             var ram_usg_raw = i.server.ram;
             var cpu_usg_raw = i.server.cpu;
             var is_online = i.server.online;
@@ -159,11 +157,11 @@ setIntervalAsync(async () => {
                                 const new_ram = parseFloat(get_ram[1]);
                                 if (new_ram >= mnt_max.ram) {
 
-                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
                                     send({
-                                        "content": `Server reaches memory limit, server was successfully restarted`,
+                                        "content": `Server reaches memory limit, send command to restart server`,
                                         "embeds": stats
                                     }, id_server);
+                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
 
                                 } else {
                                     //log.info(`Monitor ${id_server}: ${new_ram} | LIMIT RAM ${mnt_max.ram}`);
@@ -181,19 +179,19 @@ setIntervalAsync(async () => {
                             const timeupinsec = Math.floor(Date.now() / 1000) - parseInt(is_startup);
                             if (new_cpu >= mnt_max.cpu) {
 
-                                if (timeupinsec >= 60) {
-                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
+                                if (timeupinsec >= 120) {
                                     send({
-                                        "content": `Server too busy, server was successfully restarted`,
+                                        "content": `Server too busy, send command to restart server`,
                                         "embeds": stats
                                     }, id_server);
+                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
                                 } else {
                                     log.info(`SKIP CPU MAX BY TOO FAST: ${timeupinsec} sec`);
                                 }
 
                             } else {
                                 // is_startup = raw date time
-                                //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu} | TimeUP ${is_startup} (${lib.timestr(is_startup)})`);
+                                //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu} | TimeUP ${timeupinsec} (${lib.timestr(is_startup)})`);
                             }
                         } else {
                             log.info(`SKIP CPU...`);
@@ -209,6 +207,7 @@ setIntervalAsync(async () => {
             }
 
             //Check previous comparisons online
+            var old = tmp_cek[found];
             if (is_online !== old.server.online) {
                 if (is_online) {
                     send({

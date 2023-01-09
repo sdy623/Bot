@@ -260,12 +260,16 @@ bot.on("messageCreate", (message) => {
     );
   }
 
-  if (message.interaction) {
-    log.info("interaction message: " + message.interaction.commandName);
-  }
-
   // ignore messages from bots
   if (message.author.bot) return;
+
+  // Log User Interaction
+  if (message.interaction) {
+    var use_cmd = message.interaction.commandName;
+    if (!mylib.contains(use_cmd, ['cmd'])) {
+      log.info("interaction message: " + use_cmd);
+    }
+  }
 
   // (verify) Delete useless messages, If not admin (TODO: Add multi user)
   if (message.channel.id == 1039554337438961714) {
