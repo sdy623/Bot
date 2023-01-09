@@ -120,6 +120,7 @@ module.exports = {
                 monitor: d.monitor, // This should be private data?
                 cpu: "???",
                 ram: "???",
+                startup: "???",
                 commit: "???"
             };
 
@@ -130,7 +131,6 @@ module.exports = {
 
                     var ts = await api_gio.Server(d.api.url);
                     if (ts.code == 200) {
-                        // TODO: get stats ram cpu via shell
                         o['online'] = true;
                         o['player'] = ts.data.online;
                         o['sub'] = ts.data.server;
@@ -160,6 +160,14 @@ module.exports = {
                     let stats = await this.SH(`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`, key);
                     if (stats.code == 200) {
                         const objstats = JSON.parse(stats.msg);
+
+                        // get start up (cache data time if not restart yet)
+                        let startup = await this.SH(`date --date "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`, key);
+                        if (startup.code == 200) {
+                            const objstartup = JSON.parse(startup.msg);
+                            o['startup'] = objstartup; // raw only
+                        }
+
                         var pre_ram = objstats['MemPerc'];
                         o['cpu'] = objstats['CPUPerc'];
                         o['ram'] = objstats['MemUsage'] + " (" + pre_ram + ")";

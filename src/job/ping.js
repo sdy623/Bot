@@ -31,13 +31,9 @@ function send(raw, id) {
 
             var msgadd = "";
 
-            const diffMilliseconds = nowtime.getTime() - old_msg.date.getTime();
-            const diffMinutes = Math.floor(diffMilliseconds / 60000);
-            const diffSeconds = Math.floor(diffMilliseconds / 1000) % 60;
-
             var old_time = parseInt(old_msg.date.getTime() / 1000);
 
-            msgadd = `${msg_now} (${diffMinutes > 0 ? diffMinutes + ' minutes ' : ''}${diffSeconds} seconds from previous message)`;
+            msgadd = `${msg_now} (${lib.timestr(old_time)})`;
 
             msg_now = msgadd;
 
@@ -111,6 +107,7 @@ setIntervalAsync(async () => {
             var ram_usg_raw = i.server.ram;
             var cpu_usg_raw = i.server.cpu;
             var is_online = i.server.online;
+            var is_startup = i.server.startup;
 
             var stats = [
                 {
@@ -126,6 +123,10 @@ setIntervalAsync(async () => {
                         {
                             "name": `CPU`,
                             "value": `${cpu_usg_raw}`
+                        },
+                        {
+                            "name": `Up Time`,
+                            "value": `${lib.timestr(is_startup)}`
                         },
                         {
                             "name": `Player Online`,
@@ -177,16 +178,22 @@ setIntervalAsync(async () => {
                         // CPU
                         if (mnt_max.cpu >= 1) {
                             const new_cpu = parseFloat(cpu_usg_raw);
+                            const timeupinsec = Math.floor(Date.now() / 1000) - parseInt(is_startup);
                             if (new_cpu >= mnt_max.cpu) {
 
-                                await restart(mnt_type, mnt_name, id_server, mnt_service);
-                                send({
-                                    "content": `Server too busy, server was successfully restarted`,
-                                    "embeds": stats
-                                }, id_server);
+                                if (timeupinsec >= 60) {
+                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
+                                    send({
+                                        "content": `Server too busy, server was successfully restarted`,
+                                        "embeds": stats
+                                    }, id_server);
+                                } else {
+                                    log.info(`SKIP CPU MAX BY TOO FAST: ${timeupinsec} sec`);
+                                }
 
                             } else {
-                                //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu}`);
+                                // is_startup = raw date time
+                                //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu} | TimeUP ${is_startup} (${lib.timestr(is_startup)})`);
                             }
                         } else {
                             log.info(`SKIP CPU...`);
