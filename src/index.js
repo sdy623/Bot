@@ -191,17 +191,21 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 
 bot.on(Events.InteractionCreate, async (interaction) => {
 
-  // log
-  log.info(
-    `interaction from ${interaction.commandName} - ${interaction.user.id} (Channel: ${interaction.channel.name} - ${interaction.channel.id})`
-  );
+  var cn_id = interaction.channel.id;
+  var user_id = interaction.user.id;
 
   // if found cmd
-  if (interaction.commandName) {
+  var use_cmd = interaction.commandName;
+  if (use_cmd) {
+
+    // Skip LOG
+    if (!mylib.contains(use_cmd, ['cmd'])) {
+      log.info(`Event Interaction: ${use_cmd} - ${user_id} (Channel: ${interaction.channel.name} - ${cn_id}`);
+    }
 
     // verify channel
-    if (interaction.channel.id == "1039554337438961714") {
-      if (!(interaction.commandName).includes("verify")) {
+    if (cn_id == "1039554337438961714") {
+      if (!(use_cmd).includes("verify")) {
         await interaction.reply({
           content: "can't be used here",
           ephemeral: true,
@@ -209,6 +213,13 @@ bot.on(Events.InteractionCreate, async (interaction) => {
         return; // bye bug :p
       }
     }
+
+  } else {
+
+    // Log Normal
+    log.info(
+      `Event Interaction:  ${user_id} (Channel: ${interaction.channel.name} - ${cn_id})`
+    );
 
   }
 
@@ -253,21 +264,23 @@ bot.on(Events.InteractionCreate, async (interaction) => {
 
 bot.on("messageCreate", (message) => {
 
-  // 969145030537281536,988248508429647922 = log public (join/out/levelup) | 987073348418809928 = log private
-  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928', '988248508429647922'])) {
-    log.info(
-      `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
-    );
-  }
-
   // ignore messages from bots
   if (message.author.bot) return;
+
+  // 969145030537281536,988248508429647922 = log public (join/out/levelup) | 987073348418809928 = log private
+  if (!mylib.contains(message.channel.id, ['969145030537281536', '987073348418809928', '988248508429647922'])) {
+    if (message.content) {
+      log.info(
+        `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
+      );
+    }
+  }  
 
   // Log User Interaction
   if (message.interaction) {
     var use_cmd = message.interaction.commandName;
     if (!mylib.contains(use_cmd, ['cmd'])) {
-      log.info("interaction message: " + use_cmd);
+      log.info("Message Create with Interaction Message: " + use_cmd);
     }
   }
 
