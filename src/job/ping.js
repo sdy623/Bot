@@ -107,6 +107,21 @@ setIntervalAsync(async () => {
             var is_online = i.server.online;
             var is_startup = i.server.startup;
 
+            let timeupinsec = Math.floor(Date.now() / 1000) - parseInt(is_startup);
+
+            // cek log msg
+            var found_msg = last_msg.findIndex(el => el.id === id_server);
+            if (found_msg !== -1) {
+                var old_msg = last_msg[found_msg];
+                if (old_msg) {
+                    // get time by msg
+                    var old_time = parseInt(old_msg.date.getTime() / 1000);
+                    timeupinsec = Math.floor(Date.now() / 1000) - old_time;
+
+                    //console.log(`${timeupinsec} - ${id_server}`);
+                }
+            }
+
             var stats = [
                 {
                     "type": "rich",
@@ -140,70 +155,75 @@ setIntervalAsync(async () => {
             // Check Only Online
             if (is_online) {
 
-                // Monitor
-                var mnt = i.server.monitor;
-                if (mnt) {
-                    // check config max
-                    var mnt_max = mnt.max;
-                    var mnt_type = mnt.type;
-                    var mnt_name = mnt.name;
-                    var mnt_service = mnt.service;
-                    if (mnt_max) {
+                if (timeupinsec >= 300) {
 
-                        // Check RAM
-                        if (mnt_max.ram >= 1) {
-                            var get_ram = ram_usg_raw.match(regex_ram);
-                            if (get_ram) {
-                                const new_ram = parseFloat(get_ram[1]);
-                                if (new_ram >= mnt_max.ram) {
+                    // Monitor
+                    var mnt = i.server.monitor;
+                    if (mnt) {
+                        // check config max
+                        var mnt_max = mnt.max;
+                        var mnt_type = mnt.type;
+                        var mnt_name = mnt.name;
+                        var mnt_service = mnt.service;
+                        if (mnt_max) {
 
-                                    send({
-                                        "content": `Server reaches memory limit, send command to restart server`,
-                                        "embeds": stats
-                                    }, id_server);
-                                    await restart(mnt_type, mnt_name, id_server, mnt_service);
+                            // Check RAM
+                            if (mnt_max.ram >= 1) {
+                                var get_ram = ram_usg_raw.match(regex_ram);
+                                if (get_ram) {
+                                    const new_ram = parseFloat(get_ram[1]);
+                                    if (new_ram >= mnt_max.ram) {
 
+                                        send({
+                                            "content": `Server reaches memory limit, send command to restart server`,
+                                            "embeds": stats
+                                        }, id_server);
+                                        log.info(`RestartTES2: ${timeupinsec} sec`);
+                                        await restart(mnt_type, mnt_name, id_server, mnt_service);
+
+                                    } else {
+                                        //log.info(`Monitor ${id_server}: ${new_ram} | LIMIT RAM ${mnt_max.ram}`);
+                                    }
                                 } else {
-                                    //log.info(`Monitor ${id_server}: ${new_ram} | LIMIT RAM ${mnt_max.ram}`);
+                                    log.info(`SKIP 3: ${ram_usg_raw} `);
                                 }
                             } else {
-                                log.info(`SKIP 3: ${ram_usg_raw} `);
+                                log.info(`SKIP RAM...`);
                             }
-                        } else {
-                            log.info(`SKIP RAM...`);
-                        }
 
-                        // CPU
-                        if (mnt_max.cpu >= 1) {
-                            const new_cpu = parseFloat(cpu_usg_raw);
-                            const timeupinsec = Math.floor(Date.now() / 1000) - parseInt(is_startup);
-                            if (new_cpu >= mnt_max.cpu) {
+                            // CPU
+                            if (mnt_max.cpu >= 1) {
+                                const new_cpu = parseFloat(cpu_usg_raw);
+                                if (new_cpu >= mnt_max.cpu) {
 
-                                if (timeupinsec >= 120) {
                                     send({
                                         "content": `Server too busy, send command to restart server`,
                                         "embeds": stats
                                     }, id_server);
+                                    log.info(`RestartTES1: ${timeupinsec} sec`);
                                     await restart(mnt_type, mnt_name, id_server, mnt_service);
-                                } else {
-                                    log.info(`SKIP CPU MAX BY TOO FAST: ${timeupinsec} sec`);
-                                }
 
+                                } else {
+                                    // is_startup = raw date time
+                                    //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu} | TimeUP ${timeupinsec} (${lib.timestr(is_startup)})`);
+                                }
                             } else {
-                                // is_startup = raw date time
-                                //log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu} | TimeUP ${timeupinsec} (${lib.timestr(is_startup)})`);
+                                log.info(`SKIP CPU...`);
                             }
+
                         } else {
-                            log.info(`SKIP CPU...`);
+                            log.info(`SKIP 1`);
                         }
 
                     } else {
-                        log.info(`SKIP 1`);
+                        log.info(`SKIP 2`);
                     }
 
                 } else {
-                    log.info(`SKIP 2`);
+                    // Don't monitor if it restarts too early...
+                    //log.info(`SKIP TOO FAST: ${timeupinsec} sec`);
                 }
+
             }
 
             //Check previous comparisons online
@@ -220,9 +240,11 @@ setIntervalAsync(async () => {
                 }
             }
 
+            // Update
             tmp_cek[found] = i;
+
         } else {
-            log.info("SKIP");
+            // Add
             tmp_cek.push(i);
         }
 

@@ -156,16 +156,26 @@ module.exports = {
 
                 if (server_live) {
 
-                    // TODO: add type monitor
+                    // TODO: add monitor in app
                     let stats = await this.SH(`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`, key);
                     if (stats.code == 200) {
                         const objstats = JSON.parse(stats.msg);
 
-                        // get start up (cache data time if not restart yet)
-                        let startup = await this.SH(`date --date "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`, key);
-                        if (startup.code == 200) {
-                            const objstartup = JSON.parse(startup.msg);
-                            o['startup'] = objstartup; // raw only
+                        // 1 = monitor container, 2 = monitor app
+                        if (d.monitor.type == 1) {
+                            // get startup container (cache data time if not restart yet)
+                            let startup = await this.SH(`date -u -d "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`, key);
+                            if (startup.code == 200) {
+                                o['startup'] = startup.msg; // raw only
+                            }
+                        } else if (d.monitor.type == 2) {
+                            // get startup app in container
+                            let startup = await this.SH(`date -u -d "$(docker container exec ${d.monitor.name} ps -A -o comm,lstart | grep ${d.monitor.service} | awk '{print $(NF-3)" "$(NF-2)" "$(NF-1)" "$NF}')" +%s`, key);
+                            if (startup.code == 200) {
+                                o['startup'] = startup.msg; // raw only
+                            }
+                        } else {
+                            console.log("idk");
                         }
 
                         var pre_ram = objstats['MemPerc'];
@@ -237,16 +247,16 @@ module.exports = {
                             code: 200
                         };
                     }
-                }).catch(async function (r) {
-                    //log.error("tes: ",r);
+                }).catch(async function (rx) {
+                    log.error("Error SH1: ", rx);
                     return {
                         msg: "ERROR SH1",
                         code: 301
                     };
                 })
             })
-            .catch(async function (r) {
-                //log.error("tes: ",r);
+            .catch(async function (rc) {
+                log.error("Error SH2: ", rc);
                 return {
                     msg: "ERROR SH2",
                     code: 301

@@ -45,7 +45,7 @@ module.exports = {
             return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ephemeral: true });
         } catch (err) {
             log.error("Error: ", err);
-            return await interaction.editReply({ content: "Unknown error", ephemeral: true });
+            return await interaction.reply({ content: "Unknown error", ephemeral: true });
         }
     },
 };

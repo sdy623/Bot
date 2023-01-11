@@ -129,10 +129,22 @@ bot.on(Events.MessageReactionAdd, async (reaction, user) => {
 
   // Get user get reaction
   const member = guild.members.cache.get(id_user_to_reaction);
+
+  if (!member.roles) {
+    console.log(member);
+    return;
+  }
+
   const member_have = member.roles.cache;
 
   // Get whos reaction
   const users = guild.members.cache.get(id_user);
+
+  if (!users.roles) {
+    console.log(users);
+    return;
+  }
+
   const users_have = users.roles.cache;
 
   log.info(`LOG Reaction: ${name_user} ${is} -> ${msg}`);
@@ -230,11 +242,13 @@ bot.on(Events.InteractionCreate, async (interaction) => {
     try {
       await m.execute(interaction);
     } catch (error) {
-      log.error(error);
+      log.error("Modal Error", error);
+      /*
       await interaction.reply({
         content: "Modals is not recognized :(",
         ephemeral: true,
       });
+      */
     }
     return;
   }
@@ -274,7 +288,7 @@ bot.on("messageCreate", (message) => {
         `Message from ${message.author.username} - ${message.author.id} (Channel: ${message.channel.name} - ${message.channel.id}):\n-> ${message.content}`
       );
     }
-  }  
+  }
 
   // Log User Interaction
   if (message.interaction) {
