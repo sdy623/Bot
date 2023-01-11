@@ -11,7 +11,7 @@ module.exports = {
         .setDescription("Send Command (RAW) to Server")
         .addStringOption(option =>
             option.setName('id')
-                .setDescription('Server ID: [sg1|eu1|gio]')
+                .setDescription('Server ID: [sg1|eu1|gio2]')
                 .setRequired(true))
         .addStringOption(option =>
             option.setName('uid')

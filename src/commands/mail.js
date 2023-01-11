@@ -9,7 +9,11 @@ const config = require("../config.json");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("mail")
-        .setDescription("Send mail to GIO Server")
+        .setDescription("Send Mail to Server")
+        .addStringOption(option =>
+            option.setName('id')
+                .setDescription('Server ID: [sg1|eu1|gio2]')
+                .setRequired(true))
         .addStringOption(option =>
             option.setName('uid')
                 .setDescription('uid player')
@@ -24,13 +28,19 @@ module.exports = {
      */
     async execute(interaction) {
         try {
+
+            let server_id = interaction.options.getString('id');
             let uid = interaction.options.getString('uid');
             let set_command = interaction.options.getString('command');
+            let username = interaction.user.username;
+
+            // TODO: add gc mail
+
             var input;
             if (set_command.includes("msg")) {
                 // send email
                 var valb = set_command.split("-");
-                input = await api_gio.Mail(uid, valb[1], interaction.user.username, null, valb[2]);
+                input = await api_gio.Mail(server_id, uid, valb[1], username, null, valb[2]);
             } else if (set_command.includes("gitem")) {
                 // send multi item
                 var more_item = set_command.split(",");
@@ -46,7 +56,7 @@ module.exports = {
                         'promote_level': 0,  // cts
                     });
                 });
-                input = await api_gio.Mail(uid, "A gift item from Discord", interaction.user.username, null, `Accept a gift from me ~ YuukiPS`, itemtoadd);
+                input = await api_gio.Mail(server_id, uid, "A gift item from Discord", username, null, `Accept a gift from me ~ YuukiPS`, itemtoadd);
             } else {
                 return await interaction.reply({ content: `Unknown command: ${set_command}`, ephemeral: true });
             };
@@ -58,7 +68,7 @@ module.exports = {
 
         } catch (err) {
             log.error("Error: ", err);
-            return await interaction.editReply({ content: "error2", ephemeral: true });
+            return await interaction.reply({ content: "error2", ephemeral: true });
         }
     },
 };
