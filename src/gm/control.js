@@ -236,6 +236,7 @@ module.exports = {
         })
             .then(async function () {
                 return ssh.execCommand(raw, { cwd: '.' }).then(function (result) {
+                    ssh.dispose();
                     if (result.stderr) {
                         return {
                             msg: result.stdout,
@@ -248,6 +249,7 @@ module.exports = {
                         };
                     }
                 }).catch(async function (rx) {
+                    ssh.dispose();
                     log.error("Error SH1: ", rx);
                     return {
                         msg: "ERROR SH1",
@@ -256,6 +258,7 @@ module.exports = {
                 })
             })
             .catch(async function (rc) {
+                ssh.dispose();
                 log.error("Error SH2: ", rc);
                 return {
                     msg: "ERROR SH2",
