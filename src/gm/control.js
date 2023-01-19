@@ -259,7 +259,8 @@ module.exports = {
             })
             .catch(async function (rc) {
                 ssh.dispose();
-                log.error("Error SH2: ", rc);
+                log.error(`Error SH2: Server ${server_id}`);
+                log.error(rc);
                 return {
                     msg: "ERROR SH2",
                     code: 301
