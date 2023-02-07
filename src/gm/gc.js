@@ -32,7 +32,7 @@ module.exports = {
     Server: async function (server_url) {
         try {
             const response = await axios.get(server_url + "status/server", {
-                timeout: 5000
+                timeout: 1000 * 10
             });
             const d = response.data;
             return {
