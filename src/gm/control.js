@@ -144,7 +144,7 @@ module.exports = {
                         o['online'] = true;
                         o['player'] = ts.data.playerCount;
                         if (ts.data.MemoryCurrently) {
-                            //o['ram'] = ts.data.MemoryCurrently + " MB (" + ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) + " %)";
+                            o['ram'] = ts.data.MemoryCurrently + " MB (" + ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) + " %)";
                         }
                         if (ts.data.DockerGS) {
                             o['commit'] = ts.data.DockerGS;
@@ -154,7 +154,7 @@ module.exports = {
 
                 }
 
-                if (server_live) {
+                if (server_live && d.monitor && d.monitor.name != "") {
 
                     // TODO: add monitor in app
                     let stats = await this.SH(`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`, key);
