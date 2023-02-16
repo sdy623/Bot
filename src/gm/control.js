@@ -1,277 +1,287 @@
-const log = require('../util/logger');
+/** @format */
 
-const api_gio = require('./gio');
-const api_gc = require('./gc');
+const log = require("../util/logger")
 
-const mylib = require("../lib");
-const config = require("../config.json");
+const api_gio = require("./gio")
+const api_gc = require("./gc")
 
-const axios = require('axios');
+const mylib = require("../lib")
+const config = require("../config.json")
 
-const { NodeSSH } = require('node-ssh');
+const axios = require("axios")
+
+const { NodeSSH } = require("node-ssh")
 
 // TODO: better use datebase
-let key = [];
+let key = []
 // Thank you ChatGPT
-let cache_serverlist;
+let cache_serverlist
 
 module.exports = {
-    Config: function (server_id) {
-        // check id server
-        if (server_id) {
-            var g_config = config.server[server_id];
-            if (!g_config) {
-                return {
-                    msg: "Config server not found",
-                    code: 404
-                }
-            }
-        } else {
-            return {
-                msg: "Need id server",
-                code: 404
-            }
-        }
-        return {
-            msg: "OK",
-            code: 200,
-            data: g_config
-        }
-    },
-    GM: async function (server_id, uid, cmd, code) {
-        try {
+	Config: function (server_id) {
+		// check id server
+		if (server_id) {
+			var g_config = config.server[server_id]
+			if (!g_config) {
+				return {
+					msg: "Config server not found",
+					code: 404
+				}
+			}
+		} else {
+			return {
+				msg: "Need id server",
+				code: 404
+			}
+		}
+		return {
+			msg: "OK",
+			code: 200,
+			data: g_config
+		}
+	},
+	GM: async function (server_id, uid, cmd, code) {
+		try {
+			log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`)
 
-            log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`);
+			if (mylib.contains(cmd, ["item add all", "clear all", "quest clear all"])) {
+				return {
+					msg: "This command is temporarily blocked by admin",
+					code: 403
+				}
+			}
 
-            if (mylib.contains(cmd, ['item add all', 'clear all', 'quest clear all'])) {
-                return {
-                    msg: "This command is temporarily blocked by admin",
-                    code: 403
-                }
-            }
+			// check uid
+			if (!uid) {
+				return {
+					msg: "no uid",
+					code: 301
+				}
+			}
+			// check cmd
+			if (!cmd) {
+				return {
+					msg: "no cmd",
+					code: 301
+				}
+			}
 
-            // check uid
-            if (!uid) {
-                return {
-                    msg: "no uid",
-                    code: 301
-                }
-            }
-            // check cmd
-            if (!cmd) {
-                return {
-                    msg: "no cmd",
-                    code: 301
-                }
-            }
+			// check server
+			var configis = this.Config(server_id)
+			if (configis.code != 200) {
+				return {
+					msg: configis.msg,
+					code: configis.code
+				} // maybe it's better to take it safe
+			}
 
-            // check server
-            var configis = this.Config(server_id);
-            if (configis.code != 200) {
-                return {
-                    msg: configis.msg,
-                    code: configis.code
-                }; // maybe it's better to take it safe
-            }
+			if (configis.data.api.type == 1) {
+				// GIO
+				return await api_gio.GM(configis.data.api.url, uid, cmd)
+			} else if (configis.data.api.type == 2) {
+				// GC
+				if (configis.data.api.password && configis.data.api.password != "") {
+					code = configis.data.api.password
+				}
+				return await api_gc.GM(configis.data.api.url, uid, cmd, code)
+			} else {
+				return {
+					msg: "No Found config server1",
+					code: 404
+				}
+			}
+		} catch (error) {
+			log.error(` > Error GM`, error)
+			return {
+				msg: "Error Get",
+				code: 302
+			}
+		}
+	},
+	Server: async function (server_id) {
+		var obj = config.server
 
-            if (configis.data.api.type == 1) {
-                // GIO
-                return await api_gio.GM(configis.data.api.url, uid, cmd);
-            } else if (configis.data.api.type == 2) {
-                // GC
-                if (configis.data.api.password && configis.data.api.password != "") {
-                    code = configis.data.api.password;
-                }
-                return await api_gc.GM(configis.data.api.url, uid, cmd, code);
-            } else {
-                return {
-                    msg: "No Found config server1",
-                    code: 404
-                }
-            }
+		if (cache_serverlist && Date.now() < cache_serverlist.cache) {
+			cache_serverlist["msg"] = "OK but cache"
+			if (server_id) {
+				return cache_serverlist.data.find((j) => j.id == server_id)
+			}
+			return cache_serverlist
+		}
 
-        } catch (error) {
-            log.error(` > Error GM`, error);
-            return {
-                msg: "Error Get",
-                code: 302
-            }
-        }
+		const r = await Promise.all(
+			Object.keys(obj).map(async (key) => {
+				var tmp = {}
+				var d = obj[key]
 
-    },
-    Server: async function (server_id) {
-        var obj = config.server;
+				var o = {
+					online: false,
+					player: 0,
+					game: d.game,
+					version: d.version,
+					public: d.public,
+					monitor: d.monitor, // This should be private data?
+					cpu: "???",
+					ram: "???",
+					startup: "???",
+					commit: "???"
+				}
 
-        if (cache_serverlist && Date.now() < cache_serverlist.cache) {
-            cache_serverlist['msg'] = "OK but cache";
-            if (server_id) {
-                return cache_serverlist.data.find((j) => j.id == server_id);
-            }
-            return cache_serverlist;
-        }
+				var server_live = false
 
-        const r = await Promise.all(Object.keys(obj).map(async (key) => {
-            var tmp = {};
-            var d = obj[key];
+				try {
+					if (d.api.type == 1) {
+						var ts = await api_gio.Server(d.api.url)
+						if (ts.code == 200) {
+							o["online"] = true
+							o["player"] = ts.data.online
+							o["sub"] = ts.data.server
+							server_live = true
+						}
+					} else if (d.api.type == 2) {
+						var ts = await api_gc.Server(d.api.url)
+						if (ts.code == 0) {
+							o["online"] = true
+							o["player"] = ts.data.playerCount
+							if (ts.data.MemoryCurrently) {
+								o["ram"] =
+									ts.data.MemoryCurrently +
+									" MB (" +
+									((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) +
+									" %)"
+							}
+							if (ts.data.DockerGS) {
+								o["commit"] = ts.data.DockerGS
+							}
+							server_live = true
+						}
+					}
 
-            var o = {
-                online: false,
-                player: 0,
-                game: d.game,
-                version: d.version,
-                public: d.public,
-                monitor: d.monitor, // This should be private data?
-                cpu: "???",
-                ram: "???",
-                startup: "???",
-                commit: "???"
-            };
+					if (server_live && d.monitor && d.monitor.name != "") {
+						// TODO: add monitor in app
+						let stats = await this.SH(
+							`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`,
+							key
+						)
+						if (stats.code == 200) {
+							const objstats = JSON.parse(stats.msg)
 
-            var server_live = false;
+							// 1 = monitor container, 2 = monitor app
+							if (d.monitor.type == 1) {
+								// get startup container (cache data time if not restart yet)
+								let startup = await this.SH(
+									`date -u -d "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`,
+									key
+								)
+								if (startup.code == 200) {
+									o["startup"] = startup.msg // raw only
+								}
+							} else if (d.monitor.type == 2) {
+								// get startup app in container
+								let startup = await this.SH(
+									`date -u -d "$(docker container exec ${d.monitor.name} ps -A -o comm,lstart | grep ${d.monitor.service} | awk '{print $(NF-3)" "$(NF-2)" "$(NF-1)" "$NF}')" +%s`,
+									key
+								)
+								if (startup.code == 200) {
+									o["startup"] = startup.msg // raw only
+								}
+							} else {
+								console.log("idk")
+							}
 
-            try {
-                if (d.api.type == 1) {
+							var pre_ram = objstats["MemPerc"]
+							o["cpu"] = objstats["CPUPerc"]
+							o["ram"] = objstats["MemUsage"] + " (" + pre_ram + ")"
+						} else {
+							log.error(stats)
+						}
+					}
+				} catch (error) {
+					log.error(error)
+				}
 
-                    var ts = await api_gio.Server(d.api.url);
-                    if (ts.code == 200) {
-                        o['online'] = true;
-                        o['player'] = ts.data.online;
-                        o['sub'] = ts.data.server;
-                        server_live = true;
-                    }
+				tmp["name"] = d.title
+				tmp["id"] = key
+				tmp["server"] = o
 
-                } else if (d.api.type == 2) {
+				return tmp
+			})
+		)
 
-                    var ts = await api_gc.Server(d.api.url);
-                    if (ts.code == 0) {
-                        o['online'] = true;
-                        o['player'] = ts.data.playerCount;
-                        if (ts.data.MemoryCurrently) {
-                            o['ram'] = ts.data.MemoryCurrently + " MB (" + ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) + " %)";
-                        }
-                        if (ts.data.DockerGS) {
-                            o['commit'] = ts.data.DockerGS;
-                        }
-                        server_live = true;
-                    }
+		// fetch data from external source
+		cache_serverlist = {
+			data: r,
+			msg: "OK but update",
+			code: 200,
+			cache: Date.now() + 10 * 1000 // 10 sec
+		}
+		if (server_id) {
+			return cache_serverlist.data.find((j) => j.id == server_id)
+		}
 
-                }
+		return cache_serverlist
+	},
+	SH: async function (raw, server_id) {
+		// check server
+		var configis = this.Config(server_id)
+		if (configis.code != 200) {
+			return {
+				msg: configis.msg,
+				code: configis.code
+			}
+		}
 
-                if (server_live && d.monitor && d.monitor.name != "") {
+		var dt = configis.data
 
-                    // TODO: add monitor in app
-                    let stats = await this.SH(`docker stats --format "{{ json . }}" --no-stream ${d.monitor.name}`, key);
-                    if (stats.code == 200) {
-                        const objstats = JSON.parse(stats.msg);
+		const password = dt.ssh.password
+		const ssh = new NodeSSH()
 
-                        // 1 = monitor container, 2 = monitor app
-                        if (d.monitor.type == 1) {
-                            // get startup container (cache data time if not restart yet)
-                            let startup = await this.SH(`date -u -d "$(docker inspect -f '{{.State.StartedAt}}' ${d.monitor.name})" +'%s'`, key);
-                            if (startup.code == 200) {
-                                o['startup'] = startup.msg; // raw only
-                            }
-                        } else if (d.monitor.type == 2) {
-                            // get startup app in container
-                            let startup = await this.SH(`date -u -d "$(docker container exec ${d.monitor.name} ps -A -o comm,lstart | grep ${d.monitor.service} | awk '{print $(NF-3)" "$(NF-2)" "$(NF-1)" "$NF}')" +%s`, key);
-                            if (startup.code == 200) {
-                                o['startup'] = startup.msg; // raw only
-                            }
-                        } else {
-                            console.log("idk");
-                        }
-
-                        var pre_ram = objstats['MemPerc'];
-                        o['cpu'] = objstats['CPUPerc'];
-                        o['ram'] = objstats['MemUsage'] + " (" + pre_ram + ")";
-                    } else {
-                        log.error(stats);
-                    }
-
-                }
-
-            } catch (error) {
-                log.error(error);
-            }
-
-            tmp['name'] = d.title;
-            tmp['id'] = key;
-            tmp['server'] = o;
-
-            return tmp;
-        }));
-
-        // fetch data from external source
-        cache_serverlist = {
-            data: r,
-            msg: "OK but update",
-            code: 200,
-            cache: Date.now() + (10 * 1000) // 10 sec
-        };
-        if (server_id) {
-            return cache_serverlist.data.find((j) => j.id == server_id);
-        }
-
-        return cache_serverlist;
-    },
-    SH: async function (raw, server_id) {
-
-        // check server
-        var configis = this.Config(server_id);
-        if (configis.code != 200) {
-            return {
-                msg: configis.msg,
-                code: configis.code
-            };
-        }
-
-        var dt = configis.data;
-
-        const password = dt.ssh.password;
-        const ssh = new NodeSSH();
-
-        return ssh.connect({
-            host: dt.ip,
-            username: dt.ssh.username,
-            port: dt.ssh.port,
-            password,
-            tryKeyboard: true,
-        })
-            .then(async function () {
-                return ssh.execCommand(raw, { cwd: '.' }).then(function (result) {
-                    ssh.dispose();
-                    if (result.stderr) {
-                        return {
-                            msg: result.stdout,
-                            code: 404
-                        };
-                    } else {
-                        return {
-                            msg: result.stdout,
-                            code: 200
-                        };
-                    }
-                }).catch(async function (rx) {
-                    ssh.dispose();
-                    log.error("Error SH1: ", rx);
-                    return {
-                        msg: "ERROR SH1",
-                        code: 301
-                    };
-                })
-            })
-            .catch(async function (rc) {
-                ssh.dispose();
-                log.error(`Error SH2: Server ${server_id}`);
-                log.error(rc);
-                return {
-                    msg: "ERROR SH2",
-                    code: 301
-                };
-            })
-    },
-    Verified: function (tes) {
-        /*
+		return ssh
+			.connect({
+				host: dt.ip,
+				username: dt.ssh.username,
+				port: dt.ssh.port,
+				password,
+				tryKeyboard: true
+			})
+			.then(async function () {
+				return ssh
+					.execCommand(raw, { cwd: "." })
+					.then(function (result) {
+						ssh.dispose()
+						if (result.stderr) {
+							return {
+								msg: result.stdout,
+								code: 404
+							}
+						} else {
+							return {
+								msg: result.stdout,
+								code: 200
+							}
+						}
+					})
+					.catch(async function (rx) {
+						ssh.dispose()
+						log.error("Error SH1: ", rx)
+						return {
+							msg: "ERROR SH1",
+							code: 301
+						}
+					})
+			})
+			.catch(async function (rc) {
+				ssh.dispose()
+				log.error(`Error SH2: Server ${server_id}`)
+				log.error(rc)
+				return {
+					msg: "ERROR SH2",
+					code: 301
+				}
+			})
+	},
+	Verified: function (tes) {
+		/*
                    if (!set_code) {
                        // find id user in key
                        var found_user = key.find((j) => j.id === itme);
@@ -313,6 +323,5 @@ module.exports = {
                        }
                    }
                    */
-    }
-
-};
+	}
+}

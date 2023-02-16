@@ -1,14 +1,16 @@
+/** @format */
+
 p {
-    margin-top: 0;
-    margin-bottom: 0rem;
+	margin-top: 0;
+	margin-bottom: 0rem;
 }
 
 .lead {
-    font-size: 1.25rem;
-    font-weight: 300;
-    color: white;
+	font-size: 1.25rem;
+	font-weight: 300;
+	color: white;
 }
 
 .display-1 {
-    color: #a57fc9;
+	color: #a57fc9;
 }

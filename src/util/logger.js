@@ -1,6 +1,8 @@
-const pino = require('pino')
+/** @format */
+
+const pino = require("pino")
 module.exports = pino({
-    transport: {
-        target: 'pino-pretty'
-    },
-});
+	transport: {
+		target: "pino-pretty"
+	}
+})

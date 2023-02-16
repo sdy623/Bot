@@ -1,35 +1,35 @@
 [
-  {
-    "id": "spawnEnitiy",
-    "head": "/spawn",
-    "label": "Spawn Animal & Enitiy",
-    "params": [
-      {
-        "type": "entityList",
-        "required": true,
-        "name": "Entity",
-        "value": {
-          "value": "28010101",
-          "label": "Golden Crab"
-        }
-      },
-      {
-        "head": "x",
-        "type": "number",
-        "name": "Quantity",
-        "value": 1,
-        "min": 1,
-        "max": 99999999,
-        "required": false
-      },
-      {
-        "head": "lv",
-        "type": "number",
-        "name": "Level",
-        "max": 200,
-        "min": 1,
-        "required": false
-      }
-    ]
-  }
+	{
+		"id": "spawnEnitiy",
+		"head": "/spawn",
+		"label": "Spawn Animal & Enitiy",
+		"params": [
+			{
+				"type": "entityList",
+				"required": true,
+				"name": "Entity",
+				"value": {
+					"value": "28010101",
+					"label": "Golden Crab"
+				}
+			},
+			{
+				"head": "x",
+				"type": "number",
+				"name": "Quantity",
+				"value": 1,
+				"min": 1,
+				"max": 99999999,
+				"required": false
+			},
+			{
+				"head": "lv",
+				"type": "number",
+				"name": "Level",
+				"max": 200,
+				"min": 1,
+				"required": false
+			}
+		]
+	}
 ]

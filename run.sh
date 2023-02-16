@@ -2,6 +2,10 @@
 
 metode=$1
 
+if [ "$metode" = "fix" ];then
+ npx prettier --config .prettierrc.json --write .
+fi
+
 if [ "$metode" = "b" ];then
  docker build -t "siakbary/yuukibot:latest" --progress=plain .;
 fi
