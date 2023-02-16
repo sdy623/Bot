@@ -79,6 +79,9 @@ module.exports = {
                 return await api_gio.GM(configis.data.api.url, uid, cmd);
             } else if (configis.data.api.type == 2) {
                 // GC
+                if (configis.data.api.password && configis.data.api.password != "") {
+                    code = configis.data.api.password;
+                }
                 return await api_gc.GM(configis.data.api.url, uid, cmd, code);
             } else {
                 return {
