@@ -182,7 +182,7 @@ setIntervalAsync(async () => {
 									log.info(`SKIP 3: ${ram_usg_raw} `)
 								}
 							} else {
-								log.info(`SKIP RAM...`)
+								//log.info(`SKIP RAM...`)
 							}
 
 							// CPU

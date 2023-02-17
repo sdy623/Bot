@@ -80,8 +80,9 @@ module.exports = {
 				return await api_gio.GM(configis.data.api.url, uid, cmd)
 			} else if (configis.data.api.type == 2) {
 				// GC
-				if (configis.data.api.password && configis.data.api.password != "") {
-					code = configis.data.api.password
+				let pass = configis.data.api.password
+				if (pass && pass != "") {
+					code = pass
 				}
 				return await api_gc.GM(configis.data.api.url, uid, cmd, code)
 			} else {
@@ -144,11 +145,12 @@ module.exports = {
 							o["online"] = true
 							o["player"] = ts.data.playerCount
 							if (ts.data.MemoryCurrently) {
-								o["ram"] =
-									ts.data.MemoryCurrently +
-									" MB (" +
-									((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2) +
-									" %)"
+								//console.log(ts.data);
+								// 3.482GiB / 4GiB (87.04%)
+								var gb = (ts.data.MemoryCurrently / 1024).toFixed(3)
+								var maxgb = (ts.data.MemoryMax / 1024).toFixed(3)
+								var pgb = ((ts.data.MemoryCurrently / ts.data.MemoryMax) * 100).toFixed(2)
+								o["ram"] = `${gb}GiB / ${maxgb}GiB (${pgb}%)`
 							}
 							if (ts.data.DockerGS) {
 								o["commit"] = ts.data.DockerGS
