@@ -44,9 +44,18 @@ module.exports = {
 		try {
 			log.info(`LOG GM: ID ${server_id} | UID ${uid} | CMD ${cmd} | CODE ${code}`)
 
+			// stop spam
 			if (mylib.contains(cmd, ["item add all", "clear all", "quest clear all"])) {
 				return {
 					msg: "This command is temporarily blocked by admin",
+					code: 403
+				}
+			}
+
+			// Emergency, todo: we should have added password to public command only
+			if (mylib.contains(cmd, ["account", "stop"])) {
+				return {
+					msg: "This command can only be accessed by admin",
 					code: 403
 				}
 			}
@@ -82,7 +91,7 @@ module.exports = {
 				// GC
 				let pass = configis.data.api.password
 				if (pass && pass != "") {
-					code = pass
+					//code = pass;// todo: wait fix gc
 				}
 				return await api_gc.GM(configis.data.api.url, uid, cmd, code)
 			} else {

@@ -62,6 +62,7 @@ function send(raw, id) {
 		})
 	}
 	if (tosend) {
+		log.info("SEND: "+raw)
 		parentPort.postMessage({
 			type: "msg",
 			data: raw
