@@ -89,9 +89,9 @@ module.exports = {
 				return await api_gio.GM(configis.data.api.url, uid, cmd)
 			} else if (configis.data.api.type == 2) {
 				// GC
-				let pass = configis.data.api.password
+				let pass = configis.data.api.password // token public
 				if (pass && pass != "") {
-					//code = pass;// todo: wait fix gc
+					code = pass
 				}
 				return await api_gc.GM(configis.data.api.url, uid, cmd, code)
 			} else {
