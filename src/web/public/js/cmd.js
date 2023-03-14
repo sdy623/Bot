@@ -1,6 +1,6 @@
 /** @format */
 
-API_JSON_DATA = "https://fastly.jsdelivr.net/gh/Dituon/grasscutter-command-helper@main/data/en-US/3.3/"
+API_JSON_DATA = "https://fastly.jsdelivr.net/gh/Dituon/grasscutter-command-helper@main/data/en-US/3.5/"
 // found https://github.com/Dituon/grasscutter-command-helper/tree/main/data/en-US/3.3
 
 async function setup() {
@@ -37,6 +37,23 @@ async function setup() {
 				list_ms.appendChild(option)
 			})
 		}
+
+		// list item
+		const r_item = await axios.get(API_JSON_DATA + "itemList.json", {
+			timeout: 1000 * 15
+		})
+		var data_item = r_item.data
+		if (data_item) {
+			//console.log(data_item);
+			let list_ms = document.querySelector("#list_item")
+			data_item.forEach((item) => {
+				let option = document.createElement("option")
+				option.value = item.id
+				option.text = item.name
+				list_ms.appendChild(option)
+			})
+		}
+
 	} catch (error) {
 		Swal.fire({
 			icon: "error",
@@ -228,6 +245,41 @@ toadd_monster.addEventListener("click", function handleClick() {
 	//console.log('element clicked');
 })
 
+const toadd_item = document.getElementById("add_item")
+toadd_item.addEventListener("click", function handleClick() {
+	if (!CheckLogin()) return // check login
+
+	var id = document.getElementById("search_item").value
+	if (!id) {
+		Swal.fire({
+			icon: "error",
+			title: "Please fill in id",
+			showConfirmButton: false,
+			timer: 1500
+		})
+		return
+	}
+
+	var set_num = document.getElementById("set_item_num").value
+
+	var final_input = ""
+	if (data_login.server.version == 1) {
+		// GIO stuff
+		// item add 
+		final_input = `item add ${id} ${set_num}`
+	} else {
+		// GC stuff
+		// /g
+		final_input = `/g ${id} x${set_num}`
+	}
+
+	textarea_cmd.value += final_input + "\r\n"
+
+	//console.log(data_login);
+	//console.log(id);
+	//console.log('element clicked');
+})
+
 // clear
 const btn_clear = document.getElementById("clear_cmd")
 btn_clear.addEventListener("click", function handleClick() {
@@ -260,6 +312,7 @@ function Toggle(name = "go_cmd_raw", foce = null) {
 	}
 }
 
+Count("item_num")
 Count("monster_level")
 Count("monster_num")
 

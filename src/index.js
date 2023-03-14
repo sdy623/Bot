@@ -5,6 +5,11 @@ const cors = require("cors")
 const eta = require("eta")
 const { Worker } = require("worker_threads")
 
+const argv = require('minimist')(process.argv.slice(2));
+console.log(argv);
+
+const port_http = argv.port || 3000;
+
 const log = require("./util/logger")
 
 const api_control = require("./gm/control")
@@ -419,7 +424,7 @@ web.all("/api/server/:id/command", async (req, res) => {
 })
 
 if (config.startup.webserver) {
-	var listener = web.listen(3000, function () {
+	var listener = web.listen(port_http, function () {
 		log.info("Server started on port %d", listener.address().port)
 	})
 } else {

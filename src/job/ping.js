@@ -204,7 +204,7 @@ setIntervalAsync(async () => {
 									//log.info(`Monitor ${id_server}: ${new_cpu} | LIMIT CPU ${mnt_max.cpu} | TimeUP ${timeupinsec} (${lib.timestr(is_startup)})`);
 								}
 							} else {
-								log.info(`SKIP CPU...`)
+								//log.info(`SKIP CPU...`)
 							}
 						} else {
 							log.info(`SKIP 1`)

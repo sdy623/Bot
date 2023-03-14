@@ -30,11 +30,14 @@ module.exports = {
 			let uid = interaction.options.getString("uid")
 			let set_command = interaction.options.getString("command")
 			let set_code = interaction.options.getString("code")
+
 			let id_user = interaction.user.id
+			let name_user = interaction.user.username
 
 			interaction.reply({ content: "Please wait...", ephemeral: true })
 			await lib.sleep(3)
 
+			log.info(`${id_user} - ${name_user} use '${set_command}' `)
 			let d = await api_control.GM(server_id, uid, set_command, set_code)
 
 			return await interaction.editReply({ content: `${d.msg} | ${d.code}`, ephemeral: true })

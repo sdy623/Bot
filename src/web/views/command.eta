@@ -40,6 +40,31 @@
         </div>
       </div>
 
+      <!-- item -->
+
+      <div class="modal-dialog mb-3" id="bt_item">
+        <div class="modal-content rounded-4 shadow">
+
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Drop Item</h1>
+          </div>
+
+          <div class="modal-body p-5 pt-0">
+
+            <label for="exampleDataList" class="form-label">ID/Nama</label>
+            <input class="form-control" list="list_item" id="search_item" placeholder="Type to search...">
+            <datalist id="list_item">
+            </datalist>
+
+            <label class="form-label">Count/Num: </label> <label class="form-label" id="view_item_num">1</label>
+            <input type="range" class="form-range" min="1" max="200" value="1" id="set_item_num">
+
+            <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" id="add_item">Add</button>
+
+          </div>
+        </div>
+      </div>
+
       <!-- login -->
 
       <div class="modal-dialog " id="go_login">

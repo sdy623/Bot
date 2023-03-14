@@ -12,7 +12,7 @@ fi
 
 if [ "$metode" = "s" ];then
  echo "Run Localhost"
- npm run start
+ npm run start -- --port 10010
 fi
 
 if [ "$metode" = "reg" ];then
