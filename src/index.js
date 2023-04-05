@@ -1,14 +1,20 @@
-/** @format */
+/**
+ * Yuuki
+ *
+ * @format
+ */
 
 const express = require("express")
+const rateLimit = require("express-rate-limit")
+
 const cors = require("cors")
 const eta = require("eta")
 const { Worker } = require("worker_threads")
 
-const argv = require('minimist')(process.argv.slice(2));
-console.log(argv);
+const argv = require("minimist")(process.argv.slice(2))
+console.log(argv)
 
-const port_http = argv.port || 3000;
+const port_http = argv.port || 3000
 
 const log = require("./util/logger")
 
@@ -297,6 +303,17 @@ if (config.startup.bot) {
 	log.info("bot skip run....")
 }
 
+// Ratelimit
+const limit_cmd = rateLimit({
+	windowMs: 60 * 1000,
+	max: 5,
+	statusCode: 200,
+	message: {
+		msg: "Too many requests, please try again later.",
+		code: 403
+	}
+})
+
 const web = express()
 
 // Core
@@ -418,7 +435,7 @@ web.all("/api/server/:id/ping", async (req, res) => {
 	}
 })
 
-web.all("/api/server/:id/command", async (req, res) => {
+web.all("/api/server/:id/command", limit_cmd, async (req, res) => {
 	let d = await api_control.GM(req.params.id, req.query.uid, req.query.cmd, req.query.code)
 	return res.json(d)
 })

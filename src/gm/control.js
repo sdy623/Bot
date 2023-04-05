@@ -23,8 +23,10 @@ module.exports = {
 		if (server_id) {
 			var g_config = config.server[server_id]
 			if (!g_config) {
+				const list_server = Object.keys(config.server)
+				const string_list_server = list_server.join(", ")
 				return {
-					msg: "Config server not found",
+					msg: "Config server not found, try another like: " + string_list_server,
 					code: 404
 				}
 			}
@@ -101,7 +103,7 @@ module.exports = {
 				}
 			}
 		} catch (error) {
-			log.error(` > Error GM`, error)
+			log.error(error)
 			return {
 				msg: "Error Get",
 				code: 302
