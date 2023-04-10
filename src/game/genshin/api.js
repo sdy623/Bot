@@ -24,13 +24,15 @@ module.exports = {
 
 			/*
 
-			Audio: 1-EN, 2-JP
+			Language: 1-EN, 2-JP, 13-ID
 			Platform: 3-PC, 2-Android
 
 			OSRELAndroid3.5.0 | 3f8038a6406a3b89
 			OSRELWin3.5.0 | 39f0ecc6d4a1046d
 			CNRELAndroid3.5.0 | 26aeefb488ada624
 			CNRELWin3.5.0 | d64c50db414535a2
+
+			OSRELWin3.6.0 | 5a7f44b6a1aba0e2
 			*/
 
 			var platform = 1
@@ -107,7 +109,8 @@ module.exports = {
 				} else {
 					return {
 						msg: "No Config Found",
-						code: 404
+						code: 404,
+						raw: decoded
 					}
 				}
 			} else {
