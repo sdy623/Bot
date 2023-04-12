@@ -20,19 +20,19 @@ function read_json(file) {
 
 module.exports = {
 	RES: async function (version = "OSRELAndroid3.5.0", seed_id = "3f8038a6406a3b89", key_rsa = 5, audio_lang = 2) {
-		try {			
-
+		try {
 			/*
 
 			Language: 1-EN, 2-JP, 13-ID
 			Platform: 3-PC, 2-Android
 
-			OSRELAndroid3.5.0 | 3f8038a6406a3b89
 			OSRELWin3.5.0 | 39f0ecc6d4a1046d
-			CNRELAndroid3.5.0 | 26aeefb488ada624
 			CNRELWin3.5.0 | d64c50db414535a2
+			OSRELAndroid3.5.0 | 3f8038a6406a3b89
+			CNRELAndroid3.5.0 | 26aeefb488ada624
 
 			OSRELWin3.6.0 | 5a7f44b6a1aba0e2
+			CNRELWin3.6.0 | 6afecbf1786dc983&
 			*/
 
 			var platform = 1
@@ -49,7 +49,7 @@ module.exports = {
 			}
 
 			const pubKey = fs.readFileSync(`./src/game/genshin/keys/${key_rsa}-public.pem`)
-			const privKey = fs.readFileSync(`./src/game/genshin/keys/${key_rsa}-private.pem`)			
+			const privKey = fs.readFileSync(`./src/game/genshin/keys/${key_rsa}-private.pem`)
 
 			const url = `https://${server}/query_cur_region?version=${version}&lang=${audio_lang}&binary=1&platform=${platform}&channel_id=1&sub_channel_id=0&account_type=1&dispatchSeed=${seed_id}&key_id=${key_rsa}`
 			console.log("URL: " + url)
@@ -114,7 +114,7 @@ module.exports = {
 					}
 				}
 			} else {
-				console.log(d);
+				console.log(d)
 				return {
 					msg: "Faild",
 					code: 404
