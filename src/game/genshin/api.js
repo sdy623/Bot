@@ -33,6 +33,7 @@ module.exports = {
 
 			OSRELWin3.6.0 | 5a7f44b6a1aba0e2
 			CNRELWin3.6.0 | 6afecbf1786dc983&
+			OSRELAndroid3.6.0 | b89009325796c5cf
 			*/
 
 			var platform = 1
